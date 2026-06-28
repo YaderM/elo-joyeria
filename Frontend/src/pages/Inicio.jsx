@@ -15,7 +15,7 @@ function Inicio() {
 
   useEffect(() => {
     // 1. Cargar Categorías
-    axios.get('http://localhost:3000/api/productos/categorias-home')
+    axios.get('[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/productos/categorias-home')
       .then(response => {
         setCategorias(response.data);
         setCargando(false);
@@ -26,7 +26,7 @@ function Inicio() {
       });
 
     // 2. Traer productos generales y filtrar ofertas
-    axios.get('http://localhost:3000/api/productos')
+    axios.get('[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/productos')
       .then(response => {
         // Guardamos todos los productos para la barra de búsqueda nativa
         setTodosLosProductos(response.data);

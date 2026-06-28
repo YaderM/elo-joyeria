@@ -8,7 +8,7 @@ function Catalogo() {
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    axios.get('http://localhost:3000/api/productos')
+    axios.get('[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/productos')
       .then(response => {
         setProductos(response.data);
         setCargando(false);

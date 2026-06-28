@@ -61,11 +61,11 @@ function Navbar() {
       }}>
         
         {/* Logo */}
-      <Link to="/" style={{ textDecoration: 'none', marginBottom: '15px' }}>
-      <h1 style={{ color: '#b59410', fontSize: '2.4rem', fontWeight: '300', margin: 0, letterSpacing: '4px' }}>
-     ELO JOYERÍA
-      </h1>
-      </Link>
+        <Link to="/" style={{ textDecoration: 'none', marginBottom: '15px' }}>
+          <h1 style={{ color: '#b59410', fontSize: '2.4rem', fontWeight: '300', margin: 0, letterSpacing: '4px' }}>
+            ELO JOYERÍA
+          </h1>
+        </Link>
 
         {/* Enlaces */}
         <div style={{ display: 'flex', gap: '40px', alignItems: 'center' }}>
@@ -74,6 +74,7 @@ function Navbar() {
           <div 
             onMouseEnter={() => setMenuAbierto(true)}
             onMouseLeave={() => setMenuAbierto(false)}
+            onClick={() => setMenuAbierto(!menuAbierto)} // Habilita la apertura táctil en celulares
             style={{ position: 'relative', paddingBottom: '5px', cursor: 'pointer' }}
           >
             <span style={{ ...estiloLink, display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -154,10 +155,45 @@ function Navbar() {
         </div>
       </nav>
 
+      {/* Styles inteligentes inyectados de forma responsiva sin desarmar la base */}
       <style>{`
         @keyframes fadeInMenu {
           from { opacity: 0; transform: translate(-50%, 10px); }
           to { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        /* 📱 Modificaciones automáticas exclusivas para pantallas móviles */
+        @media (max-width: 768px) {
+          nav {
+            padding: 12px 15px !important;
+          }
+          nav h1 {
+            font-size: 1.8rem !important;
+            letter-spacing: 2px !important;
+          }
+          nav > div:nth-of-type(1) {
+            gap: 15px !important; 
+            flex-wrap: wrap !important;
+            justify-content: center !important;
+          }
+          
+          /* Forzamos al Mega Menú flotante a mutar en un bloque limpio en teléfonos */
+          nav div div div {
+            position: fixed !important;
+            top: 135px !important;
+            left: 5% !important;
+            right: 5% !important;
+            transform: none !important;
+            width: 90% !important;
+            background: #ffffff !important; 
+            grid-template-columns: repeat(2, 1fr) !important; 
+            padding: 20px !important;
+            box-shadow: 0px 15px 40px rgba(0,0,0,0.15) !important;
+            max-height: 60vh !important;
+            overflow-y: auto !important; 
+            z-index: 99999 !important;
+            border-radius: 8px !important;
+          }
         }
       `}</style>
     </div>
@@ -173,7 +209,6 @@ const estiloLink = {
   transition: 'color 0.2s'
 };
 
-// Estilo unificado para simular un enlace idéntico del menú de Joyería Elo
 const estiloBotonCerrarSesion = {
   background: 'transparent',
   border: 'none',

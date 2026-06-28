@@ -41,7 +41,7 @@ function GestionPromociones({ productos, cargarProductos }) {
 
     try {
       // ACTUALIZADO: Pasamos la fecha formateada de manera limpia al servidor
-      const respuesta = await axios.patch(`http://localhost:3000/api/productos/${productoSeleccionado.id_producto}/oferta`, {
+      const respuesta = await axios.patch(`[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/productos/${productoSeleccionado.id_producto}/oferta`, {
         precio_oferta: precioOfertaFinal,
         fecha_fin_oferta: fechaFormateada
       });

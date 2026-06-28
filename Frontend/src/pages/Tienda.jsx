@@ -34,7 +34,7 @@ function Tienda() {
   // 📡 Llamar a la API de Node.js con filtros
   const cargarProductos = (material, tipo) => {
     setCargando(true);
-    let url = 'http://localhost:3000/api/productos';
+    let url = '[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/productos';
     
     const queryParams = [];
     if (material) queryParams.push(`material=${material}`);

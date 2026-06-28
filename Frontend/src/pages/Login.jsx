@@ -21,7 +21,7 @@ function Login() {
     
     try {
       // Petición real al backend adaptada a tu tabla
-      const respuesta = await axios.post('http://localhost:3000/api/auth/login', {
+      const respuesta = await axios.post('[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/auth/login', {
         email,
         contrasena
       });
@@ -62,7 +62,7 @@ function Login() {
     setCargando(true);
 
     try {
-      const respuesta = await axios.post('http://localhost:3000/api/auth/restablecer', {
+      const respuesta = await axios.post('[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/auth/restablecer', {
         email,
         nuevaContrasena
       });
