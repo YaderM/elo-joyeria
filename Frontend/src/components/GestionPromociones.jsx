@@ -40,8 +40,8 @@ function GestionPromociones({ productos, cargarProductos }) {
       : null;
 
     try {
-      // ACTUALIZADO: Pasamos la fecha formateada de manera limpia al servidor
-      const respuesta = await axios.patch(`[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/productos/${productoSeleccionado.id_producto}/oferta`, {
+      // ACTUALIZADO: Pasamos la fecha formateada de manera limpia al servidor sin envolturas de markdown
+      const respuesta = await axios.patch(`https://elo-joyeria-backend.vercel.app/api/productos/${productoSeleccionado.id_producto}/oferta`, {
         precio_oferta: precioOfertaFinal,
         fecha_fin_oferta: fechaFormateada
       });

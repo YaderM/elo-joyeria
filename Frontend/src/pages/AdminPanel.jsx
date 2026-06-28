@@ -62,7 +62,7 @@ function AdminPanel() {
   const cargarProductos = async () => {
     try {
       setCargando(true);
-      const respuesta = await axios.get('[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/productos');
+      const respuesta = await axios.get('https://elo-joyeria-backend.vercel.app/api/productos');
       setProductos(respuesta.data);
     } catch (error) {
       console.error("Error al traer productos:", error);
@@ -73,8 +73,8 @@ function AdminPanel() {
 
   const cargarAuxiliares = async () => {
     try {
-      const resMateriales = await axios.get('[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/productos/aux/materiales');
-      const resTipos = await axios.get('[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/productos/aux/tipos');
+      const resMateriales = await axios.get('https://elo-joyeria-backend.vercel.app/api/productos/aux/materiales');
+      const resTipos = await axios.get('https://elo-joyeria-backend.vercel.app/api/productos/aux/tipos');
       setMateriales(resMateriales.data);
       setTipos(resTipos.data);
     } catch (error) {
@@ -90,7 +90,7 @@ function AdminPanel() {
     } else if (tipo === 'dia') {
       try {
         const hoy = new Date().toISOString().slice(0, 10);
-        const respuesta = await axios.get(`[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/ventas?fecha=${hoy}`);
+        const respuesta = await axios.get(`https://elo-joyeria-backend.vercel.app/api/ventas?fecha=${hoy}`);
         setDatosReporte(respuesta.data);
       } catch (error) {
         console.error("Error al obtener ventas diarias:", error);
@@ -105,7 +105,7 @@ function AdminPanel() {
       return;
     }
     try {
-      const respuesta = await axios.get(`[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/ventas?desde=${fechaInicio}&hasta=${fechaFin}`);
+      const respuesta = await axios.get(`https://elo-joyeria-backend.vercel.app/api/ventas?desde=${fechaInicio}&hasta=${fechaFin}`);
       setDatosReporte(respuesta.data);
     } catch (error) {
       console.error("Error al filtrar rango de ventas:", error);
@@ -145,10 +145,10 @@ function AdminPanel() {
       };
 
       if (editandoId) {
-        await axios.put(`[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/productos/${editandoId}`, datosAEnviar);
+        await axios.put(`https://elo-joyeria-backend.vercel.app/api/productos/${editandoId}`, datosAEnviar);
         alert('¡Joya actualizada con éxito!');
       } else {
-        await axios.post('[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/productos', datosAEnviar);
+        await axios.post('https://elo-joyeria-backend.vercel.app/api/productos', datosAEnviar);
         alert('¡Producto agregado con éxito!');
       }
       
@@ -163,7 +163,7 @@ function AdminPanel() {
   const manejarEliminar = async (id, nombre) => {
     if (window.confirm(`¿Estás seguro de eliminar "${nombre}"?`)) {
       try {
-        await axios.delete(`[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/productos/${id}`);
+        await axios.delete(`https://elo-joyeria-backend.vercel.app/api/productos/${id}`);
         alert('Producto eliminado.');
         cargarProductos();
       } catch (error) {
@@ -193,7 +193,7 @@ function AdminPanel() {
 
     setProcesandoRebajo(true);
     try {
-      const respuesta = await axios.post('[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/productos/rebajar-stock-local', {
+      const respuesta = await axios.post('https://elo-joyeria-backend.vercel.app/api/productos/rebajar-stock-local', {
         id_producto: idProductoSeleccionado,
         cantidadVendida: cantidadRebajo
       });

@@ -31,10 +31,10 @@ function Tienda() {
     cargarProductos(mat, tp);
   }, [location.search]);
 
-  // 📡 Llamar a la API de Node.js con filtros
+  // 📡 Llamar a la API de Node.js con filtros (URL limpia de producción)
   const cargarProductos = (material, tipo) => {
     setCargando(true);
-    let url = '[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/productos';
+    let url = 'https://elo-joyeria-backend.vercel.app/api/productos';
     
     const queryParams = [];
     if (material) queryParams.push(`material=${material}`);
@@ -159,13 +159,12 @@ function Tienda() {
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '30px' }}>
             {productosFiltradosPorPrecio.map((producto) => {
-              // Validamos si este ítem en particular tiene una oferta activa
               const tieneOferta = producto.precio_oferta !== null && producto.precio_oferta > 0;
 
               return (
                 <div key={producto.id_producto} style={stiloTarjeta}>
                   
-                  {/* Contenedor de la foto con posición relativa para aguantar la etiqueta */}
+                  {/* Contenedor de la foto */}
                   <div style={{ width: '100%', height: '220px', overflow: 'hidden', borderRadius: '4px', background: '#f9f9f9', marginBottom: '15px', position: 'relative' }}>
                     <img 
                       src={producto.imagen_url || 'https://via.placeholder.com/300'} 
@@ -173,7 +172,7 @@ function Tienda() {
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                     />
                     
-                    {/* 🏷️ NUEVO: Badge de oferta llamativo posicionado arriba de la joya */}
+                    {/* Badge de oferta */}
                     {tieneOferta && (
                       <div style={estiloEtiquetaOfertaTienda}>
                         OFERTA
@@ -185,7 +184,7 @@ function Tienda() {
                     {producto.nombre}
                   </h3>
 
-                  {/* 💰 NUEVO: Renderizado inteligente de precios según oferta */}
+                  {/* Renderizado inteligente de precios según oferta */}
                   <div style={{ margin: '10px 0', display: 'flex', flexDirection: 'column', gap: '2px', justifyContent: 'center', height: '42px' }}>
                     {tieneOferta ? (
                       <>
@@ -219,11 +218,9 @@ function Tienda() {
 
 const estiloTituloFiltro = { fontSize: '0.95rem', fontWeight: '500', color: '#333', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' };
 
-// Ajustamos levemente la tarjeta a un height de 400px para que calce perfecto la doble línea de precio sin apretar el botón
 const stiloTarjeta = { background: '#fff', borderRadius: '8px', border: '1px solid #eee', padding: '15px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '400px' };
 const estiloBotonCard = { background: '#222', color: '#fff', border: 'none', padding: '10px', width: '100%', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', letterSpacing: '1px' };
 
-// Estilo del pequeño listón de rebaja interno para la grilla de la tienda
 const estiloEtiquetaOfertaTienda = {
   position: 'absolute',
   top: '10px',

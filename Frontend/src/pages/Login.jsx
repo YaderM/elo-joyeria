@@ -20,8 +20,8 @@ function Login() {
     setCargando(true);
     
     try {
-      // Petición real al backend adaptada a tu tabla
-      const respuesta = await axios.post('[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/auth/login', {
+      // Petición real al backend con la URL de producción limpia
+      const respuesta = await axios.post('https://elo-joyeria-backend.vercel.app/api/auth/login', {
         email,
         contrasena
       });
@@ -54,7 +54,7 @@ function Login() {
     }
   };
 
-  // ♻️ Nueva función conectada al endpoint de tu backend real
+  // ♻️ Nueva función conectada al endpoint de tu backend real en producción
   const manejarRestablecer = async (e) => {
     e.preventDefault();
     setError('');
@@ -62,7 +62,7 @@ function Login() {
     setCargando(true);
 
     try {
-      const respuesta = await axios.post('[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/auth/restablecer', {
+      const respuesta = await axios.post('https://elo-joyeria-backend.vercel.app/api/auth/restablecer', {
         email,
         nuevaContrasena
       });

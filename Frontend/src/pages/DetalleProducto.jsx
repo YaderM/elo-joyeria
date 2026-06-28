@@ -17,7 +17,8 @@ function DetalleProducto() {
   const [envioAbierto, setEnvioAbierto] = useState(false);
 
   useEffect(() => {
-    axios.get(`[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/productos/${id}`)
+    // 📡 Petición HTTP limpia a la API de producción en Vercel
+    axios.get(`https://elo-joyeria-backend.vercel.app/api/productos/${id}`)
       .then(response => {
         setProducto(response.data);
         setCargando(false);

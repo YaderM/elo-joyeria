@@ -14,8 +14,8 @@ function Inicio() {
   const [busqueda, setBusqueda] = useState('');
 
   useEffect(() => {
-    // 1. Cargar Categorías
-    axios.get('[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/productos/categorias-home')
+    // 1. Cargar Categorías (Limpia de caracteres extraños de formato)
+    axios.get('https://elo-joyeria-backend.vercel.app/api/productos/categorias-home')
       .then(response => {
         setCategorias(response.data);
         setCargando(false);
@@ -26,7 +26,7 @@ function Inicio() {
       });
 
     // 2. Traer productos generales y filtrar ofertas
-    axios.get('[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/productos')
+    axios.get('https://elo-joyeria-backend.vercel.app/api/productos')
       .then(response => {
         // Guardamos todos los productos para la barra de búsqueda nativa
         setTodosLosProductos(response.data);
@@ -70,7 +70,7 @@ function Inicio() {
             Bienvenidos a Elo Joyería
           </h2>
           <p style={{ color: '#e0e0e0', fontSize: '1.2rem', lineHeight: '1.8', marginBottom: '45px', fontWeight: '300' }}>
-            Descubre piezas únicas diseñadas para capturar tus momentos más especiales. 
+            Descubre piezas uniques diseñadas para capturar tus momentos más especiales. 
             Desde la finura de la plata hasta el brillo del acero, 
             ofrecemos exclusividad y elegancia inspirada en alta joyería.
           </p>
@@ -80,7 +80,7 @@ function Inicio() {
         </div>
       </section>
 
-      {/* ✅ NUEVA SECCIÓN: BARRA DE BÚSQUEDA INTEGRADA */}
+      {/* ✅ SECCIÓN: BARRA DE BÚSQUEDA INTEGRADA */}
       <section style={{ backgroundColor: '#111', padding: '40px 20px', borderBottom: '2px solid #b59410' }}>
         <div style={{ maxWidth: '650px', margin: '0 auto', textAlign: 'center' }}>
           <label htmlFor="buscador-inicio" style={{ color: '#d4af37', display: 'block', marginBottom: '12px', fontSize: '0.95rem', letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: '400' }}>
@@ -109,7 +109,7 @@ function Inicio() {
         </div>
       </section>
 
-      {/* ✅ CONTROL DE VISTA DINÁMICA: Si busca algo, renderiza los resultados. Si no, muestra el Home original intacto. */}
+      {/* ✅ CONTROL DE VISTA DINÁMICA */}
       {busqueda.trim() !== '' ? (
         <section style={{ maxWidth: '1300px', margin: '0 auto', padding: '60px 20px' }}>
           <h3 style={estiloH3Seccion}>Resultados de la búsqueda</h3>
@@ -170,7 +170,7 @@ function Inicio() {
           )}
         </section>
       ) : (
-        /* 📦 AQUÍ EMPIEZA TU ESTRUCTURA ORIGINAL EN CASO DE NO ESTAR BUSCANDO */
+        /* 📦 ESTRUCTURA ORIGINAL EN CASO DE NO ESTAR BUSCANDO */
         <>
           {/* 2. BARRA DE VALOR / ICONOS DE CONFIANZA */}
           <section style={{ backgroundColor: '#fff', borderBottom: '1px solid #f0f0f0', padding: '30px 20px' }}>
@@ -304,7 +304,7 @@ function Inicio() {
   );
 }
 
-// 🎨 NUEVOS ESTILOS ESPECÍFICOS DEL BUSCADOR (Agregados al objeto final)
+// 🎨 OBJETOS DE ESTILOS
 const estiloInputBuscador = {
   width: '100%',
   padding: '14px 50px 14px 50px',
@@ -332,7 +332,6 @@ const estiloBotonLimpiarBuscador = {
   transition: 'color 0.2s ease'
 };
 
-// 🎨 OBJETOS DE ESTILOS EXISTENTES (GUARDADOS EXACTAMENTE IGUAL)
 const estiloBotonHero = {
   backgroundColor: '#b59410',
   color: '#fff',
@@ -431,7 +430,7 @@ const estiloItemValor = {
   padding: '10px'
 };
 
-const estiloTituloValor = {
+const estiloTurloValor = {
   margin: '5px 0',
   fontSize: '1rem',
   fontWeight: '500',

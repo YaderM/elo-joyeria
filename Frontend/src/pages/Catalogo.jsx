@@ -8,7 +8,8 @@ function Catalogo() {
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    axios.get('[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/productos')
+    // 📡 Petición HTTP limpia sin enlaces duplicados del portapapeles
+    axios.get('https://elo-joyeria-backend.vercel.app/api/productos')
       .then(response => {
         setProductos(response.data);
         setCargando(false);

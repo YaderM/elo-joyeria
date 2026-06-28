@@ -8,7 +8,8 @@ function GestionCategorias({ materiales, tipos, cargarAuxiliares }) {
   const guardarMaterial = async (e) => {
     e.preventDefault();
     try {
-      const respuesta = await axios.post('[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/productos/aux/materiales', nuevoMaterial);
+      // URL limpia sin formatos ocultos de markdown
+      const respuesta = await axios.post('https://elo-joyeria-backend.vercel.app/api/productos/aux/materiales', nuevoMaterial);
       alert(respuesta.data.mensaje || '¡Nuevo material registrado!');
       setNuevoMaterial({ nombre: '', descripcion: '' });
       cargarAuxiliares();
@@ -21,7 +22,8 @@ function GestionCategorias({ materiales, tipos, cargarAuxiliares }) {
   const guardarTipo = async (e) => {
     e.preventDefault();
     try {
-      const respuesta = await axios.post('[https://elo-joyeria-backend.vercel.app](https://elo-joyeria-backend.vercel.app)/api/productos/aux/tipos', nuevoTipo);
+      // URL limpia sin formatos ocultos de markdown
+      const respuesta = await axios.post('https://elo-joyeria-backend.vercel.app/api/productos/aux/tipos', nuevoTipo);
       alert(respuesta.data.mensaje || '¡Nuevo tipo registrado!');
       setNuevoTipo({ nombre: '' });
       cargarAuxiliares();

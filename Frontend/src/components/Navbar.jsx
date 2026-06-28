@@ -112,7 +112,7 @@ function Navbar() {
                       {seccion.titulo}
                     </h4>
                     <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                      {seccion.items.map((item, itemIdx) => (
+                      {seccionesTienda[idx].items.map((item, itemIdx) => (
                         <li key={itemIdx} style={{ marginBottom: '8px' }}>
                           <Link 
                             to={`/tienda?material=${seccion.titulo}&tipo=${item}`}
@@ -177,22 +177,50 @@ function Navbar() {
             justify-content: center !important;
           }
           
-          /* Forzamos al Mega Menú flotante a mutar en un bloque limpio en teléfonos */
+          /* 🌟 Mutación Estricta: Transforma el Mega Menú flotante en una lista Sidebar Lateral Izquierda limpia */
           nav div div div {
             position: fixed !important;
-            top: 135px !important;
-            left: 5% !important;
-            right: 5% !important;
-            transform: none !important;
-            width: 90% !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 280px !important; 
+            height: 100vh !important; 
             background: #ffffff !important; 
-            grid-template-columns: repeat(2, 1fr) !important; 
-            padding: 20px !important;
-            box-shadow: 0px 15px 40px rgba(0,0,0,0.15) !important;
-            max-height: 60vh !important;
+            box-shadow: 5px 0px 30px rgba(0, 0, 0, 0.2) !important;
+            border: none !important;
+            border-radius: 0px !important;
+            padding: 40px 25px !important;
+            display: flex !important;
+            flex-direction: column !important; 
+            align-items: flex-start !important;
+            justify-content: flex-start !important;
             overflow-y: auto !important; 
-            z-index: 99999 !important;
-            border-radius: 8px !important;
+            z-index: 999999 !important;
+            text-align: left !important;
+            transform: none !important;
+            box-sizing: border-box !important;
+            gap: 25px !important;
+          }
+
+          /* Garantiza alineación correcta de los bloques internos de categorías */
+          nav div div div > div {
+            width: 100% !important;
+            display: block !important;
+            text-align: left !important;
+          }
+
+          nav div div div h4 {
+            text-align: left !important;
+            margin-top: 5px !important;
+            margin-bottom: 8px !important;
+          }
+
+          nav div div div ul {
+            text-align: left !important;
+            padding-left: 12px !important;
+          }
+
+          nav div div div li {
+            text-align: left !important;
           }
         }
       `}</style>

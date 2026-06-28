@@ -12,23 +12,21 @@ body {
 @media (max-width: 768px) {
   
   /* 1. Reset de Estructuras Flexbox Rígidas */
-  /* Convierte cualquier fila de dos columnas (como Texto + Imagen) en una sola columna fluida */
   div[style*="display: flex"], 
   div[style*="display:flex"] {
     flex-direction: column !important;
     gap: 20px !important;
   }
 
-  /* Excepción para elementos pequeños que SÍ deben ir en fila (como selectores de cantidad, botones de tallas o estrellas) */
+  /* Excepción para elementos pequeños que SÍ deben ir en fila */
   div[style*="width: 130px"], 
   div[style*="gap: 10px"],
   div[style*="align-items: center"],
-  div[style*="display: flex"][style*="border: 1px solid"] { /* Forzar selectores +/- a quedarse horizontales */
+  div[style*="display: flex"][style*="border: 1px solid"] { 
     flex-direction: row !important;
   }
 
   /* 2. Solución Específica para el Panel Administrativo (Sidebar) */
-  /* Reestructura el menú lateral oscuro de "ELO CONTROL" para que pase arriba de todo ocupando el 100% de ancho */
   div[style*="width: 250px"],
   div[style*="width:250px"] {
     width: 100% !important;
@@ -53,7 +51,6 @@ body {
   }
 
   /* 3. Adaptación de Contenedores y Cuadrículas (Grillas de Productos) */
-  /* Hace que las secciones de la tienda y catálogos no se desborden */
   div[style*="max-width"], 
   section {
     max-width: 100% !important;
@@ -70,20 +67,20 @@ body {
   }
 
   /* 4. Optimización de Imágenes */
-  /* Evita que las imágenes mantengan tamaños gigantescos en pantallas verticales */
   img {
     max-width: 100% !important;
     height: auto !important;
   }
   
-  /* Corrige contenedores con alturas fijas (como los banners de Inicio o el detalle de la joya) */
+  /* Corrige contenedores con alturas fijas */
   div[style*="height: 520px"],
   div[style*="height: 500px"] {
     height: 320px !important;
   }
 
-  /* 5. Navbar y Menú de Navegación */
-  /* Ajusta el encabezado para que el logo "ELO JOYERÍA" y los enlaces no colapsen feo */
+  /* ==========================================================================
+     ⚙️ 5. NAVBAR Y MENÚ LATERAL IZQUIERDO EN MÓVILES
+     ========================================================================== */
   header, nav {
     flex-direction: column !important;
     text-align: center;
@@ -96,14 +93,67 @@ body {
     font-size: 0.95rem !important;
   }
 
-  /* 6. Tipografías (Títulos Gigantes) */
-  /* Encoge levemente los textos en celulares para que no hagan saltos de línea extraños */
+  /* Reducción del espacio horizontal de los enlaces del nav para que entren bien en móvil */
+  nav > div:nth-of-type(1) {
+    gap: 15px !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+  }
+
+  /* 🌟 TRANSFORMACIÓN DEL MENU DE TIENDA EN SIDEBAR LATERAL IZQUIERDA COMPLETA */
+  .mega-menu-elojoyeria {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 280px !important; /* Ancho elegante de menú lateral */
+    height: 100vh !important; /* Ocupa todo el alto de la pantalla */
+    background-color: #ffffff !important;
+    box-shadow: 5px 0px 30px rgba(0, 0, 0, 0.2) !important;
+    border: none !important;
+    border-radius: 0px !important;
+    padding: 40px 25px !important;
+    display: flex !important;
+    flex-direction: column !important; /* Estructura vertical */
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    overflow-y: auto !important; /* Desplazamiento si las joyas no caben */
+    z-index: 999999 !important;
+    text-align: left !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Re-estructuración de los contenedores internos del menú */
+  .mega-menu-seccion {
+    width: 100% !important;
+    display: block !important;
+    margin-bottom: 20px !important;
+  }
+
+  .mega-menu-elojoyeria h4 {
+    text-align: left !important;
+    margin-top: 10px !important;
+    margin-bottom: 8px !important;
+    width: 100% !important;
+  }
+
+  .mega-menu-elojoyeria ul {
+    text-align: left !important;
+    padding-left: 12px !important;
+    width: 100% !important;
+  }
+
+  .mega-menu-elojoyeria li {
+    text-align: left !important;
+  }
+
+  /* 6. Tipografías */
   h1 { font-size: 1.9rem !important; }
   h2 { font-size: 1.6rem !important; }
   h3 { font-size: 1.3rem !important; }
 
-  /* 7. Formularios (Contacto, Login y Buscadores del Admin) */
-  /* Hace que las tarjetas de inicio de sesión, campos y barras de búsqueda queden perfectos */
+  /* 7. Formularios */
   form, 
   div[style*="box-shadow"],
   input[placeholder*="Buscar"],
@@ -117,11 +167,10 @@ body {
   }
 
   input, textarea, select {
-    font-size: 16px !important; /* Esencial: Evita que iOS / iPhone haga un zoom automático molesto al dar clic */
+    font-size: 16px !important;
   }
 
   /* 8. Tablas y Contenedores del Panel Administrativo */
-  /* Captura la grilla interna o cualquier contenedor que aloje la tabla del inventario de joyas */
   div[style*="overflow"]:has(table),
   div[style*="background-color: white"]:has(table),
   .admin-table-container {
@@ -135,7 +184,7 @@ body {
   table {
     display: table !important;
     width: 100% !important;
-    min-width: 650px !important; /* Permite un deslizamiento horizontal limpio con el dedo */
+    min-width: 650px !important;
     white-space: nowrap !important;
   }
 
@@ -148,7 +197,7 @@ body {
 /* Ajustes finos extremos para teléfonos compactos */
 @media (max-width: 480px) {
   div[style*="height: 320px"] {
-    height: 260px !important; /* Reduce un poco más el espacio del banner/imagen */
+    height: 260px !important;
   }
   h1 { font-size: 1.6rem !important; }
   h2 { font-size: 1.4rem !important; }
