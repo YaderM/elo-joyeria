@@ -430,7 +430,8 @@ const estiloItemValor = {
   padding: '10px'
 };
 
-const estiloTurloValor = {
+// ✅ Nombre corregido de estiloTurloValor a estiloTituloValor
+const estiloTituloValor = {
   margin: '5px 0',
   fontSize: '1rem',
   fontWeight: '500',
