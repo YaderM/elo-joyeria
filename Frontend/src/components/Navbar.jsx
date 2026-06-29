@@ -68,7 +68,7 @@ function Navbar() {
           <div 
             onMouseEnter={() => setMenuAbierto(true)}
             onMouseLeave={() => setMenuAbierto(false)}
-            onClick={(e) => { e.preventDefault(); setMenuAbierto(!menuAbierto); }} // 👈 ÚNICO CAMBIO: e.preventDefault()
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMenuAbierto(!menuAbierto); }} 
             style={{ position: 'relative', paddingBottom: '5px', cursor: 'pointer' }}
           >
             <span style={{ ...estiloLink, display: 'flex', alignItems: 'center', gap: '5px' }}>
