@@ -188,8 +188,10 @@ function DetalleProducto() {
       <style>{`
         @media (max-width: 768px) {
           .detalle-producto-container { padding: 20px !important; }
-          .contenedor-foto-detalle { height: 350px !important; }
-          .contenedor-foto-detalle > div { height: 350px !important; }
+          .contenedor-foto-detalle { height: 450px !important; }
+          .contenedor-foto-detalle > div { height: 450px !important; }
+          /* Aumentar tamaño de fuente en acordeones para mejor lectura */
+          div[style*="cursor: pointer"] { padding: 22px 0 !important; font-size: 1rem !important; }
         }
       `}</style>
     </div>
