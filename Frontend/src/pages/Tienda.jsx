@@ -73,10 +73,10 @@ function Tienda() {
   });
 
   return (
-    <div style={{ display: 'flex', maxWidth: '1300px', margin: '0 auto', padding: '40px 20px', gap: '40px' }}>
+    <div className="tienda-layout-container" style={{ display: 'flex', maxWidth: '1300px', margin: '0 auto', padding: '40px 20px', gap: '40px' }}>
       
       {/* 🛠️ PANEL LATERAL DE FILTROS */}
-      <aside style={{ width: '280px', flexShrink: 0, borderRight: '1px solid #eee', paddingRight: '20px' }}>
+      <aside className="tienda-sidebar-filtros" style={{ width: '280px', flexShrink: 0, borderRight: '1px solid #eee', paddingRight: '20px' }}>
         <h3 style={{ fontSize: '1.2rem', fontWeight: '400', letterSpacing: '1px', marginBottom: '25px', color: '#222' }}>
           FILTRAR POR
         </h3>
@@ -145,7 +145,7 @@ function Tienda() {
       </aside>
 
       {/* 🛍️ SECCIÓN DERECHA: GRILLA DE PRODUCTOS */}
-      <section style={{ flexGrow: 1 }}>
+      <section className="tienda-productos-seccion" style={{ flexGrow: 1 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
           <p style={{ color: '#777', fontSize: '0.9rem' }}>
             {productosFiltradosPorPrecio.length} artículos encontrados
@@ -157,12 +157,12 @@ function Tienda() {
         ) : productosFiltradosPorPrecio.length === 0 ? (
           <p style={{ color: '#666', textAlign: 'center', marginTop: '40px' }}>No hay productos disponibles con los filtros seleccionados.</p>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '30px' }}>
+          <div className="tienda-productos-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '30px' }}>
             {productosFiltradosPorPrecio.map((producto) => {
               const tieneOferta = producto.precio_oferta !== null && producto.precio_oferta > 0;
 
               return (
-                <div key={producto.id_producto} style={stiloTarjeta}>
+                <div key={producto.id_producto} style={stiloTarjeta} className="tarjeta-producto-elo">
                   
                   {/* Contenedor de la foto */}
                   <div style={{ width: '100%', height: '220px', overflow: 'hidden', borderRadius: '4px', background: '#f9f9f9', marginBottom: '15px', position: 'relative' }}>
@@ -212,6 +212,64 @@ function Tienda() {
           </div>
         )}
       </section>
+
+      {/* 📱 Inyección de Estilos Responsivos Exclusivos para Celular */}
+      <style>{`
+        @media (max-width: 768px) {
+          .tienda-layout-container {
+            flex-direction: column !important;
+            padding: 15px 12px !important;
+            gap: 20px !important;
+          }
+          
+          .tienda-sidebar-filtros {
+            width: 100% !important;
+            border-right: none !important;
+            border-bottom: 1px solid #eee !important;
+            padding-right: 0 !important;
+            padding-bottom: 20px !important;
+          }
+
+          /* Opcional: Hace colapsar los filtros en bloques horizontales compactos en móvil */
+          .tienda-sidebar-filtros > div {
+            margin-bottom: 15px !important;
+          }
+
+          .tienda-productos-seccion {
+            width: 100% !important;
+          }
+
+          /* Asegura una cuadrícula limpia de dos columnas en teléfonos móviles */
+          .tienda-productos-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 12px !important;
+          }
+
+          .tarjeta-producto-elo {
+            padding: 10px !important;
+            height: auto !important; /* Permite crecimiento dinámico uniforme */
+            min-height: 340px !important;
+          }
+
+          .tarjeta-producto-elo div:first-of-type {
+            height: 150px !important; /* Escala la imagen proporcionalmente */
+          }
+          
+          .tarjeta-producto-elo h3 {
+            font-size: 0.85rem !important;
+          }
+        }
+
+        /* Soporte adicional para celulares muy delgados */
+        @media (max-width: 480px) {
+          .tienda-productos-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+          .tarjeta-producto-elo div:first-of-type {
+            height: 130px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
@@ -232,7 +290,7 @@ const estiloEtiquetaOfertaTienda = {
   fontWeight: '700',
   borderRadius: '3px',
   letterSpacing: '0.5px',
-  boxShadow: '0 2px 6px rgba(0,0,0,0.15)'
+  shadows: '0 2px 6px rgba(0,0,0,0.15)'
 };
 
 export default Tienda;

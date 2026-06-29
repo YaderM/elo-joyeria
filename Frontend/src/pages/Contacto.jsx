@@ -48,8 +48,8 @@ function Contacto() {
   };
 
   return (
-    <section style={estiloSeccion}>
-      <div style={estiloContenedor}>
+    <section style={estiloSeccion} className="contacto-seccion-elo">
+      <div style={estiloContenedor} className="contacto-contenedor-elo">
         
         {/* Encabezado */}
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
@@ -127,6 +127,19 @@ function Contacto() {
         </form>
 
       </div>
+
+      {/* 📱 Reglas responsivas para que el formulario no rompa en pantallas chicas */}
+      <style>{`
+        @media (max-width: 768px) {
+          .contacto-seccion-elo {
+            padding: 40px 15px !important;
+          }
+          .contacto-contenedor-elo {
+            padding: 25px 20px !important;
+            box-sizing: border-box !important;
+          }
+        }
+      `}</style>
     </section>
   );
 }

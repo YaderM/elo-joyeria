@@ -68,7 +68,7 @@ function Navbar() {
         </Link>
 
         {/* Enlaces */}
-        <div style={{ display: 'flex', gap: '40px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '40px', alignItems: 'center' }} className="enlaces-container-elo">
           <Link to="/" style={estiloLink}>INICIO</Link>
           
           <div 
@@ -81,9 +81,9 @@ function Navbar() {
               TIENDA <span style={{ fontSize: '0.7rem' }}>▼</span>
             </span>
 
-            {/* Mega Menú */}
+            {/* Mega Menú - Añadimos una clase explícita para controlarlo sin romper cascadas */}
             {menuAbierto && (
-              <div style={{
+              <div className="mega-menu-desplegable-elo" style={{
                 position: 'absolute',
                 top: '100%',
                 left: '50%',
@@ -99,7 +99,7 @@ function Navbar() {
                 animation: 'fadeInMenu 0.2s ease-out'
               }}>
                 {seccionesTienda.map((seccion, idx) => (
-                  <div key={idx}>
+                  <div key={idx} className="seccion-columna-elo">
                     <h4 style={{ 
                       color: '#b59410', 
                       fontSize: '0.9rem', 
@@ -155,7 +155,7 @@ function Navbar() {
         </div>
       </nav>
 
-      {/* Styles inteligentes inyectados de forma responsiva sin desarmar la base */}
+      {/* Styles inteligentes inyectados usando clases explícitas */}
       <style>{`
         @keyframes fadeInMenu {
           from { opacity: 0; transform: translate(-50%, 10px); }
@@ -171,55 +171,47 @@ function Navbar() {
             font-size: 1.8rem !important;
             letter-spacing: 2px !important;
           }
-          nav > div:nth-of-type(1) {
+          .enlaces-container-elo {
             gap: 15px !important; 
             flex-wrap: wrap !important;
             justify-content: center !important;
           }
           
-          /* 🌟 Mutación Estricta: Transforma el Mega Menú flotante en una lista Sidebar Lateral Izquierda limpia */
-          nav div div div {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 280px !important; 
-            height: 100vh !important; 
-            background: #ffffff !important; 
-            box-shadow: 5px 0px 30px rgba(0, 0, 0, 0.2) !important;
-            border: none !important;
-            border-radius: 0px !important;
-            padding: 40px 25px !important;
-            display: flex !important;
-            flex-direction: column !important; 
-            align-items: flex-start !important;
-            justify-content: flex-start !important;
-            overflow-y: auto !important; 
-            z-index: 999999 !important;
-            text-align: left !important;
-            transform: none !important;
-            box-sizing: border-box !important;
-            gap: 25px !important;
+          /* Cambiamos el Mega menú flotante de la tienda a un bloque vertical desplegable idóneo para móviles */
+          .mega-menu-desplegable-elo {
+            position: absolute !important;
+            top: 100% !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            width: 90vw !important;
+            max-width: 320px !important;
+            grid-template-columns: 1fr !important; /* Forza una sola columna vertical */
+            gap: 20px !important;
+            max-height: 380px !important;
+            overflow-y: auto !important; /* Permite scroll si la pantalla es muy pequeña */
+            padding: 20px !important;
+            box-shadow: 0px 8px 25px rgba(0,0,0,0.15) !important;
+            z-index: 99999 !important;
           }
 
-          /* Garantiza alineación correcta de los bloques internos de categorías */
-          nav div div div > div {
+          .seccion-columna-elo {
             width: 100% !important;
-            display: block !important;
             text-align: left !important;
           }
 
-          nav div div div h4 {
+          .seccion-columna-elo h4 {
             text-align: left !important;
             margin-top: 5px !important;
             margin-bottom: 8px !important;
+            border-bottom: 1px solid #f0f0f0 !important;
           }
 
-          nav div div div ul {
+          .seccion-columna-elo ul {
             text-align: left !important;
-            padding-left: 12px !important;
+            padding-left: 5px !important;
           }
 
-          nav div div div li {
+          .seccion-columna-elo li {
             text-align: left !important;
           }
         }
