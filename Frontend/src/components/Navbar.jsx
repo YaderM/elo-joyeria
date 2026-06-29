@@ -177,18 +177,17 @@ function Navbar() {
             justify-content: center !important;
           }
           
-          /* Cambiamos el Mega menú flotante de la tienda a un bloque vertical desplegable idóneo para móviles */
+          /* AJUSTE: Forzamos el ancho y el posicionamiento para evitar que se corte */
           .mega-menu-desplegable-elo {
-            position: absolute !important;
-            top: 100% !important;
+            position: fixed !important; /* Cambiado a fixed para centrar mejor en viewport */
+            top: 140px !important;
             left: 50% !important;
             transform: translateX(-50%) !important;
             width: 90vw !important;
             max-width: 320px !important;
-            grid-template-columns: 1fr !important; /* Forza una sola columna vertical */
-            gap: 20px !important;
-            max-height: 380px !important;
-            overflow-y: auto !important; /* Permite scroll si la pantalla es muy pequeña */
+            grid-template-columns: 1fr !important;
+            max-height: 50vh !important;
+            overflow-y: auto !important;
             padding: 20px !important;
             box-shadow: 0px 8px 25px rgba(0,0,0,0.15) !important;
             z-index: 99999 !important;
