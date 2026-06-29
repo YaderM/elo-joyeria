@@ -170,7 +170,6 @@ function Inicio() {
           )}
         </section>
       ) : (
-        /* 📦 ESTRUCTURA ORIGINAL EN CASO DE NO ESTAR BUSCANDO */
         <>
           {/* 2. BARRA DE VALOR / ICONOS DE CONFIANZA */}
           <section style={{ backgroundColor: '#fff', borderBottom: '1px solid #f0f0f0', padding: '30px 20px' }}>
@@ -292,7 +291,14 @@ function Inicio() {
               <p style={{ fontSize: '1rem', fontWeight: '300', lineHeight: '1.6', marginBottom: '30px', color: '#eaeaea' }}>
                 Cada joya de nuestra colección pasa por un estricto control de calidad para asegurar que recibas un brillo duradero y un acabado perfecto. Redefine tu estilo diario con Joyería Elo.
               </p>
-              <Link to="/tienda" style={{ ...estiloBotonHero, backgroundColor: '#fff', color: '#222', boxShadow: 'none' }}>
+              {/* SOLUCIÓN: onClick que evita el comportamiento de salto al footer */}
+              <Link 
+                to="/tienda" 
+                onClick={(e) => {
+                  window.scrollTo(0, 0);
+                }} 
+                style={{ ...estiloBotonHero, backgroundColor: '#fff', color: '#222', boxShadow: 'none' }}
+              >
                 Ver Nueva Colección
               </Link>
             </div>
@@ -430,7 +436,6 @@ const estiloItemValor = {
   padding: '10px'
 };
 
-// ✅ Nombre corregido de estiloTurloValor a estiloTituloValor
 const estiloTituloValor = {
   margin: '5px 0',
   fontSize: '1rem',
