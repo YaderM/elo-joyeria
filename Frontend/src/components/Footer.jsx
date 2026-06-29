@@ -27,7 +27,7 @@ function Footer() {
           <h4 style={{ color: '#fff', fontSize: '1rem', fontWeight: '500', marginBottom: '15px', letterSpacing: '1px' }}>CONTACTO & DIRECCIÓN</h4>
           <p style={{ margin: '0 0 8px 0', fontSize: '0.85rem' }}>📍 Grecia Alajuela, Costa Rica</p>
           <p style={{ margin: '0 0 8px 0', fontSize: '0.85rem' }}>📦 Envíos a todo el país por Correos de Costa Rica</p>
-          <p style={{ margin: '0 0 8px 0', fontSize: '0.85rem' }}>📱 WhatsApp: (+506) 8888-8888</p>
+          <p style={{ margin: '0 0 8px 0', fontSize: '0.85rem' }}>📱 WhatsApp: (+506) 6113-0448</p>
           <p style={{ margin: '0 0 8px 0', fontSize: '0.85rem' }}>🕒 Horario: Lunes a Sábado: 9:00 AM - 6:00 PM</p>
         </div>
 
@@ -36,7 +36,7 @@ function Footer() {
       <hr style={{ border: 0, height: '1px', background: '#333', margin: '30px 0' }} />
 
       <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '15px', alignItems: 'center', fontSize: '0.8rem' }}>
-        <span>© {new Date().getFullYear()} Joyería Elo. Todos los derechos reservados.</span>
+        <span>© {new Date().getFullYear()} Elo Joyeria. Todos los derechos reservados.</span>
         <span style={{ color: '#888' }}>⚡ Conexión Segura vía SINPE Móvil</span>
       </div>
     </footer>

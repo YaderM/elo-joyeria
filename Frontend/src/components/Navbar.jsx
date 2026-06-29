@@ -5,29 +5,27 @@ function Navbar() {
   const [menuAbierto, setMenuAbierto] = useState(false);
   const navigate = useNavigate();
 
-  // 🕵️ Validación estricta: Solo mostramos la opción si el usuario actual tiene rol de cliente
   const esCliente = localStorage.getItem('usuarioRol') === 'cliente';
 
   const seccionesTienda = [
     {
-      titulo: 'Acero', // Antes: 'ACERO'
-      items: ['Anillos', 'Argollas', 'Aretes', 'Cadenas', 'Collares', 'Huggies', 'Dijes', 'Conjuntos', 'Pulseras', 'Rosarios', 'Tobilleras'] // Cambié 'Juegos de Acero' por 'Conjuntos' para que coincida con tu BD
+      titulo: 'Acero',
+      items: ['Anillos', 'Argollas', 'Aretes', 'Cadenas', 'Collares', 'Huggies', 'Dijes', 'Conjuntos', 'Pulseras', 'Rosarios', 'Tobilleras']
     },
     {
-      titulo: 'Pandora', // Antes: 'PANDORA'
+      titulo: 'Pandora',
       items: ['Anillos', 'Aretes', 'Cadenas de Seguridad', 'Charms', 'Pulseras', 'Cadenas']
     },
     {
-      titulo: 'Plata', // Antes: 'PLATA 925' - Lo dejamos en 'Plata' como en la BD
+      titulo: 'Plata',
       items: ['Anillos', 'Aretes', 'Cadenas', 'Dijes', 'Pulseras']
     },
     {
-      titulo: 'Piercings', // Antes: 'PIERCINGS'
-      items: ['Piercings'] // Cambiado para que cuando filtre busque exactamente 'Piercings' en tipo_producto
+      titulo: 'Piercings',
+      items: ['Piercings']
     }
   ];
 
-  // 🔄 Limpia el almacenamiento local de sesión y redirige
   const manejarCerrarSesion = () => {
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminNombre');
@@ -37,7 +35,6 @@ function Navbar() {
 
   return (
     <div style={{ width: '100%', position: 'sticky', top: 0, zIndex: 1000 }}>
-      {/* Cintillo Elegante Sutil */}
       <div style={{
         backgroundColor: '#222',
         color: '#fff',
@@ -49,7 +46,6 @@ function Navbar() {
         Envíos gratis a todo el país por compras mayores a ₡45,000 ✨
       </div>
 
-      {/* Navbar Principal */}
       <nav style={{
         background: '#fff',
         borderBottom: '1px solid #eaeaea',
@@ -60,28 +56,25 @@ function Navbar() {
         position: 'relative'
       }}>
         
-        {/* Logo */}
         <Link to="/" style={{ textDecoration: 'none', marginBottom: '15px' }}>
           <h1 style={{ color: '#b59410', fontSize: '2.4rem', fontWeight: '300', margin: 0, letterSpacing: '4px' }}>
             ELO JOYERÍA
           </h1>
         </Link>
 
-        {/* Enlaces */}
         <div style={{ display: 'flex', gap: '40px', alignItems: 'center' }} className="enlaces-container-elo">
           <Link to="/" style={estiloLink}>INICIO</Link>
           
           <div 
             onMouseEnter={() => setMenuAbierto(true)}
             onMouseLeave={() => setMenuAbierto(false)}
-            onClick={() => setMenuAbierto(!menuAbierto)} // Habilita la apertura táctil en celulares
+            onClick={(e) => { e.preventDefault(); setMenuAbierto(!menuAbierto); }} // 👈 ÚNICO CAMBIO: e.preventDefault()
             style={{ position: 'relative', paddingBottom: '5px', cursor: 'pointer' }}
           >
             <span style={{ ...estiloLink, display: 'flex', alignItems: 'center', gap: '5px' }}>
               TIENDA <span style={{ fontSize: '0.7rem' }}>▼</span>
             </span>
 
-            {/* Mega Menú - Añadimos una clase explícita para controlarlo sin romper cascadas */}
             {menuAbierto && (
               <div className="mega-menu-desplegable-elo" style={{
                 position: 'absolute',
@@ -136,12 +129,9 @@ function Navbar() {
             )}
           </div>
 
-          {/* 🌟 Nueva Pestaña Nosotros Perfectamente Integrada */}
           <Link to="/nosotros" style={estiloLink}>NOSOTROS</Link>
-
           <Link to="/contacto" style={estiloLink}>CONTACTO</Link>
 
-          {/* 🔐 Botón adaptado al diseño minimalista: Solo visible si es un Cliente autenticado */}
           {esCliente && (
             <button 
               onClick={manejarCerrarSesion} 
@@ -155,14 +145,12 @@ function Navbar() {
         </div>
       </nav>
 
-      {/* Styles inteligentes inyectados usando clases explícitas */}
       <style>{`
         @keyframes fadeInMenu {
           from { opacity: 0; transform: translate(-50%, 10px); }
           to { opacity: 1; transform: translate(-50%, 0); }
         }
 
-        /* 📱 Modificaciones automáticas exclusivas para pantallas móviles */
         @media (max-width: 768px) {
           nav {
             padding: 12px 15px !important;
@@ -177,9 +165,8 @@ function Navbar() {
             justify-content: center !important;
           }
           
-          /* AJUSTE: Forzamos el ancho y el posicionamiento para evitar que se corte */
           .mega-menu-desplegable-elo {
-            position: fixed !important; /* Cambiado a fixed para centrar mejor en viewport */
+            position: fixed !important; 
             top: 140px !important;
             left: 50% !important;
             transform: translateX(-50%) !important;
