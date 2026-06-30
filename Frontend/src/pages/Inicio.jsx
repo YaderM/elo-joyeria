@@ -53,24 +53,23 @@ function Inicio() {
   return (
     <div style={{ backgroundColor: '#fafafa', minHeight: '100vh' }}>
       
-      {/* 1. SECCIÓN HERO / BANNER PRINCIPAL */}
+      {/* 1. SECCIÓN HERO / BANNER PRINCIPAL CON IMAGEN DE FONDO */}
       <section style={{
         position: 'relative',
-        backgroundColor: '#1a1a1a',
         padding: '140px 20px',
         textAlign: 'center',
         color: '#fff',
-        backgroundImage: 'linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7))',
+        backgroundImage: 'linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("https://i.ibb.co/FbDtSW3d/Whats-App-Image-2026-06-21-at-6-36-48-PM-3.jpg")',
         backgroundSize: 'cover',
         backgroundPosition: 'center'
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <span style={{ color: '#b59410', letterSpacing: '3px', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '15px' }}>Colecciones Exclusivas</span>
-          <h2 style={{ color: '#d4af37', fontSize: '3.5rem', fontWeight: '300', letterSpacing: '3px', marginBottom: '25px', marginTop: '0' }}>
+          <h2 style={{ color: '#d4af37', fontSize: '3.5rem', fontWeight: '300', letterSpacing: '3px', marginBottom: '25px', marginTop: '0', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
             Bienvenidos a Elo Joyería
           </h2>
-          <p style={{ color: '#e0e0e0', fontSize: '1.2rem', lineHeight: '1.8', marginBottom: '45px', fontWeight: '300' }}>
-            Descubre piezas uniques diseñadas para capturar tus momentos más especiales. 
+          <p style={{ color: '#fff', fontSize: '1.2rem', lineHeight: '1.8', marginBottom: '45px', fontWeight: '300', textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
+            Descubre piezas únicas diseñadas para capturar tus momentos más especiales. 
             Desde la finura de la plata hasta el brillo del acero, 
             ofrecemos exclusividad y elegancia inspirada en alta joyería.
           </p>
@@ -291,7 +290,6 @@ function Inicio() {
               <p style={{ fontSize: '1rem', fontWeight: '300', lineHeight: '1.6', marginBottom: '30px', color: '#eaeaea' }}>
                 Cada joya de nuestra colección pasa por un estricto control de calidad para asegurar que recibas un brillo duradero y un acabado perfecto. Redefine tu estilo diario con Joyería Elo.
               </p>
-              {/* SOLUCIÓN: onClick que evita el comportamiento de salto al footer */}
               <Link 
                 to="/tienda" 
                 onClick={(e) => {
