@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 // ✅ Importación directa desde la misma carpeta 'pages'
-import Contacto from './Contacto'; 
+import Contacto from './Contacto';
 
 function Inicio() {
   const [categorias, setCategorias] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [productosOferta, setProductosOferta] = useState([]);
-  
+
   // ✅ NUEVOS ESTADOS PARA LA BÚSQUEDA PROFESIONAL
   const [todosLosProductos, setTodosLosProductos] = useState([]);
   const [busqueda, setBusqueda] = useState('');
@@ -52,7 +52,7 @@ function Inicio() {
 
   return (
     <div style={{ backgroundColor: '#fafafa', minHeight: '100vh' }}>
-      
+
       {/* 1. SECCIÓN HERO / BANNER PRINCIPAL CON IMAGEN DE FONDO */}
       <section style={{
         position: 'relative',
@@ -69,8 +69,8 @@ function Inicio() {
             Bienvenidos a Elo Joyería
           </h2>
           <p style={{ color: '#fff', fontSize: '1.2rem', lineHeight: '1.8', marginBottom: '45px', fontWeight: '300', textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
-            Descubre piezas únicas diseñadas para capturar tus momentos más especiales. 
-            Desde la finura de la plata hasta el brillo del acero, 
+            Descubre piezas únicas diseñadas para capturar tus momentos más especiales.
+            Desde la finura de la plata hasta el brillo del acero,
             ofrecemos exclusividad y elegancia inspirada en alta joyería.
           </p>
           <Link to="/tienda" style={estiloBotonHero}>
@@ -79,10 +79,10 @@ function Inicio() {
         </div>
       </section>
 
-      {/* ✅ SECCIÓN: BARRA DE BÚSQUEDA INTEGRADA */}
-      <section style={{ backgroundColor: '#111', padding: '40px 20px', borderBottom: '2px solid #b59410' }}>
+      {/* ✅ SECCIÓN: BARRA DE BÚSQUEDA INTEGRADA (CORREGIDA) */}
+      <section style={{ backgroundColor: '#f9f9f9', padding: '40px 20px', borderBottom: '1px solid #e0e0e0' }}>
         <div style={{ maxWidth: '650px', margin: '0 auto', textAlign: 'center' }}>
-          <label htmlFor="buscador-inicio" style={{ color: '#d4af37', display: 'block', marginBottom: '12px', fontSize: '0.95rem', letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: '400' }}>
+          <label htmlFor="buscador-inicio" style={{ color: '#b59410', display: 'block', marginBottom: '12px', fontSize: '0.95rem', letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: '500' }}>
             ¿Buscas una pieza en especial?
           </label>
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
@@ -90,15 +90,21 @@ function Inicio() {
             <input
               id="buscador-inicio"
               type="text"
-              placeholder="Escribe aquí... (ej. anillo, cadena, plata, oro)"
+              placeholder="Escribe aquí..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              style={estiloInputBuscador}
+              style={{
+                ...estiloInputBuscador,
+                backgroundColor: '#fff', // Fondo blanco para que combine con la página
+                color: '#333',          // Texto oscuro para mejor contraste
+                border: '1px solid #ddd',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
+              }}
             />
             {busqueda && (
-              <button 
-                onClick={() => setBusqueda('')} 
-                style={estiloBotonLimpiarBuscador}
+              <button
+                onClick={() => setBusqueda('')}
+                style={{ ...estiloBotonLimpiarBuscador, color: '#999' }}
                 title="Limpiar búsqueda"
               >
                 ✕
@@ -113,16 +119,16 @@ function Inicio() {
         <section style={{ maxWidth: '1300px', margin: '0 auto', padding: '60px 20px' }}>
           <h3 style={estiloH3Seccion}>Resultados de la búsqueda</h3>
           <p style={estiloSubtituloSeccion}>Mostrando piezas que coinciden con "{busqueda}"</p>
-          
+
           {productosFiltrados.length > 0 ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '30px' }}>
               {productosFiltrados.map((prod) => (
                 <Link key={prod.id_producto} to={`/producto/${prod.id_producto}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                   <div style={estiloTarjetaCategoria}>
                     <div style={{ height: '300px', overflow: 'hidden', position: 'relative' }}>
-                      <img 
-                        src={prod.imagen_url || 'https://via.placeholder.com/300x300'} 
-                        alt={prod.nombre} 
+                      <img
+                        src={prod.imagen_url || 'https://via.placeholder.com/300x300'}
+                        alt={prod.nombre}
                         style={estiloImagen}
                         onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.06)'}
                         onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -135,7 +141,7 @@ function Inicio() {
                       <h4 style={{ color: '#222', margin: '0 0 10px 0', fontSize: '1.1rem', fontWeight: '500' }}>
                         {prod.nombre}
                       </h4>
-                      
+
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'center', margin: '15px 0' }}>
                         {prod.precio_oferta !== null && prod.precio_oferta > 0 ? (
                           <>
@@ -200,7 +206,7 @@ function Inicio() {
           <section style={{ maxWidth: '1300px', margin: '0 auto', padding: '20px 20px 60px 20px' }}>
             <h3 style={estiloH3Seccion}>Explorar por Categoría</h3>
             <p style={estiloSubtituloSeccion}>Selecciona tu estilo favorito y descubre diseños exclusivos</p>
-            
+
             {cargando ? (
               <p style={{ color: '#999', textAlign: 'center', marginTop: '40px', fontSize: '1.1rem' }}>Cargando colecciones...</p>
             ) : (
@@ -209,9 +215,9 @@ function Inicio() {
                   <Link key={cat.id_categoria} to={cat.ruta_filtro} style={{ textDecoration: 'none', color: 'inherit' }}>
                     <div style={estiloTarjetaCategoria} className="tarjeta-categoria">
                       <div style={{ height: '360px', overflow: 'hidden', position: 'relative' }}>
-                        <img 
-                          src={cat.imagen_url || 'https://via.placeholder.com/400x500'} 
-                          alt={cat.nombre} 
+                        <img
+                          src={cat.imagen_url || 'https://via.placeholder.com/400x500'}
+                          alt={cat.nombre}
                           style={estiloImagen}
                           onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.06)'}
                           onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -245,9 +251,9 @@ function Inicio() {
                     <Link key={prod.id_producto} to={`/producto/${prod.id_producto}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                       <div style={{ ...estiloTarjetaCategoria, backgroundColor: '#fafafa' }}>
                         <div style={{ height: '300px', overflow: 'hidden', position: 'relative' }}>
-                          <img 
-                            src={prod.imagen_url || 'https://via.placeholder.com/300x300'} 
-                            alt={prod.nombre} 
+                          <img
+                            src={prod.imagen_url || 'https://via.placeholder.com/300x300'}
+                            alt={prod.nombre}
                             style={estiloImagen}
                             onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.06)'}
                             onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -290,11 +296,11 @@ function Inicio() {
               <p style={{ fontSize: '1rem', fontWeight: '300', lineHeight: '1.6', marginBottom: '30px', color: '#eaeaea' }}>
                 Cada joya de nuestra colección pasa por un estricto control de calidad para asegurar que recibas un brillo duradero y un acabado perfecto. Redefine tu estilo diario con Joyería Elo.
               </p>
-              <Link 
-                to="/tienda" 
+              <Link
+                to="/tienda"
                 onClick={(e) => {
                   window.scrollTo(0, 0);
-                }} 
+                }}
                 style={{ ...estiloBotonHero, backgroundColor: '#fff', color: '#222', boxShadow: 'none' }}
               >
                 Ver Nueva Colección
@@ -410,20 +416,20 @@ const estiloBotonVerDetalles = {
 };
 
 const estiloH3Seccion = {
-  textAlign: 'center', 
-  color: '#222', 
-  fontSize: '2rem', 
-  fontWeight: '300', 
-  marginBottom: '15px', 
-  letterSpacing: '2px', 
+  textAlign: 'center',
+  color: '#222',
+  fontSize: '2rem',
+  fontWeight: '300',
+  marginBottom: '15px',
+  letterSpacing: '2px',
   textTransform: 'uppercase'
 };
 
 const estiloSubtituloSeccion = {
-  textAlign: 'center', 
-  color: '#777', 
-  fontSize: '1rem', 
-  marginBottom: '50px', 
+  textAlign: 'center',
+  color: '#777',
+  fontSize: '1rem',
+  marginBottom: '50px',
   fontWeight: '300'
 };
 
