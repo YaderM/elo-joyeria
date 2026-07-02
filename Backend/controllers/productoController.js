@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { enviarCorreo } = require('../utils/emailService'); // 👈 Importamos el servicio de correo
 
 // 1. Obtener todos los productos (Con filtros para la Tienda y validación de expiración corregida por zonas horarias)
 exports.obtenerProductos = async (req, res) => {
@@ -237,5 +238,65 @@ exports.rebajarStockLocal = async (req, res) => {
     }
 };
 
-// ⚠️ AQUÍ YA NO PONEMOS EL 'module.exports = { ... }' PARA EVITAR EL CHOQUE DE REFERENCIAS.
-// Cada función ya se exportó de forma segura arriba al usar 'exports.nombreFuncion'.
+// 12. 📈 NUEVA FUNCIÓN: Obtener reporte detallado de ventas desde la vista
+exports.obtenerReporteVentas = async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM reporte_ventas_pro');
+        res.json(rows);
+    } catch (error) {
+        console.error('Error al generar el reporte de ventas:', error.message);
+        res.status(500).json({ error: 'Error al obtener el reporte de ventas' });
+    }
+};
+
+// 13. 💰 NUEVA FUNCIÓN: Registrar venta completa (Descuento stock + Registro histórico)
+exports.registrarVentaCompleta = async (req, res) => {
+    try {
+        const { id_producto, cantidad } = req.body;
+
+        // Validamos que exista el producto y haya stock
+        const [producto] = await db.query('SELECT stock FROM productos WHERE id_producto = ?', [id_producto]);
+        if (producto.length === 0 || producto[0].stock < cantidad) {
+            return res.status(400).json({ error: 'Stock insuficiente o producto no encontrado' });
+        }
+
+        // Ejecutamos las dos operaciones necesarias para el reporte
+        await db.query('UPDATE productos SET stock = stock - ? WHERE id_producto = ?', [cantidad, id_producto]);
+        await db.query('INSERT INTO cotizaciones (id_producto, cantidad, fecha_solicitud) VALUES (?, ?, NOW())', [id_producto, cantidad]);
+
+        res.json({ success: true, mensaje: 'Venta registrada y stock actualizado correctamente' });
+    } catch (error) {
+        console.error('Error al registrar la venta:', error.message);
+        res.status(500).json({ error: 'Error interno al procesar la venta' });
+    }
+};
+
+// 14. 🆕 NUEVA FUNCIÓN: Iniciar venta pendiente (Nuevo flujo automático para el Frontend)
+exports.iniciarVentaPendiente = async (req, res) => {
+    try {
+        const { id_venta, nombre_cliente, email_cliente, detalle_productos, monto_total, comprobante_sinpe } = req.body;
+        
+        // 1. Guardamos en la tabla de ventas_pendientes
+        await db.query(
+            'INSERT INTO ventas_pendientes (id_venta, nombre_cliente, email_cliente, detalle_productos, monto_total, comprobante_sinpe, estado) VALUES (?, ?, ?, ?, ?, ?, "PENDIENTE")',
+            [id_venta, nombre_cliente, email_cliente, JSON.stringify(detalle_productos), monto_total, comprobante_sinpe]
+        );
+
+        // 2. Enviamos el correo de notificación automáticamente
+        const mensajeHtml = `
+            <h2>Nueva Venta Pendiente</h2>
+            <p>Se ha recibido una nueva solicitud de compra.</p>
+            <p><strong>ID Venta:</strong> ${id_venta}</p>
+            <p><strong>Cliente:</strong> ${nombre_cliente} (${email_cliente})</p>
+            <p><strong>Total:</strong> ₡${monto_total}</p>
+            <p>Por favor, verifica el comprobante SINPE adjunto en el sistema.</p>
+        `;
+
+        await enviarCorreo(process.env.EMAIL_USER, 'Nueva venta pendiente en Joyería Elo', mensajeHtml);
+
+        res.json({ success: true, mensaje: 'Venta registrada y notificación enviada.' });
+    } catch (error) {
+        console.error('Error al iniciar venta pendiente:', error);
+        res.status(500).json({ error: 'No se pudo registrar la venta pendiente' });
+    }
+};

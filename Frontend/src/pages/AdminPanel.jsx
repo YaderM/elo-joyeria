@@ -6,6 +6,7 @@ import axios from 'axios';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import ReporteProductosPDF from '../components/ReporteProductosPDF'; // Mantiene tu inventario intacto
 import ReporteVentasPDF from '../components/ReporteVentasPDF';       // Estructura financiera modular
+import ReporteVentas from '../components/ReporteVentas';
 
 // Componentes modulares
 import GestionInventario from '../components/GestionInventario';

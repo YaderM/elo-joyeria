@@ -2,26 +2,27 @@ const express = require('express');
 const router = express.Router();
 const productoController = require('../controllers/productoController');
 
-// 🛒 RUTAS PÚBLICAS (Clientes y Tienda)
+// 🛒 RUTAS PÚBLICAS
 router.get('/', productoController.obtenerProductos);
 router.get('/categorias-home', productoController.obtenerCategoriasHome);
 
-// 🗂️ RUTAS DE AUXILIARES (Para cargar selects en formularios)
+// 🗂️ RUTAS DE AUXILIARES
 router.get('/aux/materiales', productoController.obtenerMaterialesForm);
 router.get('/aux/tipos', productoController.obtenerTiposForm);
 
-// 🔐 RUTAS ADMINISTRATIVAS (Manejo del panel)
-router.post('/', productoController.crearProducto); // POST para insertar
-router.put('/:id', productoController.actualizarProducto); // 👈 ¡FALTABA ESTA RUTA!
-router.delete('/:id', productoController.eliminarProducto); // DELETE para borrar
-router.post('/aux/materiales', productoController.crearMaterial); // POST para crear categorías nuevas como Oro
-// En routes/productoRoutes.js
-router.patch('/:id/oferta', productoController.actualizarOferta);
-
-// 📦 NUEVA RUTA: Registrar despacho / venta desde el Admin Panel rebajando stock
+// 📈 RUTAS DE VENTAS Y REPORTES (Deben ir ANTES de las rutas con :id)
+router.get('/reporte-ventas', productoController.obtenerReporteVentas);
+router.post('/registrar-venta-completa', productoController.registrarVentaCompleta);
 router.post('/rebajar-stock-local', productoController.rebajarStockLocal);
 
-// 🔍 Esta ruta dinámica va SIEMPRE al final
+// 🔐 RUTAS ADMINISTRATIVAS
+router.post('/', productoController.crearProducto);
+router.put('/:id', productoController.actualizarProducto);
+router.delete('/:id', productoController.eliminarProducto);
+router.post('/aux/materiales', productoController.crearMaterial);
+router.patch('/:id/oferta', productoController.actualizarOferta);
+
+// 🔍 RUTA DINÁMICA (SIEMPRE AL FINAL)
 router.get('/:id', productoController.obtenerProductoPorId);
 
 module.exports = router;
