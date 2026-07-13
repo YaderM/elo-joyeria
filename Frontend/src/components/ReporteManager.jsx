@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx';
 import { Page, Text, View, Document, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer';
 import ReporteProductosPDF from './ReporteProductosPDF';
 
-// 🎨 Estilos para el PDF de Ventas
+// 🎨 Estilos para el PDF
 const styles = StyleSheet.create({
   page: { padding: 40, backgroundColor: '#ffffff', fontFamily: 'Helvetica' },
   header: { marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#b59410', paddingBottom: 10 },
@@ -21,20 +21,19 @@ function ReporteVentasPDF({ data, titulo }) {
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.title}>Joyería Elo - Reporte de Ventas</Text>
+          <Text style={styles.title}>Joyería Elo - Reporte</Text>
           <Text style={styles.subtitle}>{titulo}</Text>
-          <Text style={styles.subtitle}>Generado el: {new Date().toLocaleString()}</Text>
         </View>
         <View style={styles.tableRowHeader}>
           <Text style={[styles.textHeader, { width: '20%' }]}>Código</Text>
-          <Text style={[styles.textHeader, { width: '50%' }]}>Joya / Producto</Text>
-          <Text style={[styles.textHeader, { width: '30%', textAlign: 'right', paddingRight: 5 }]}>Total Ingresos</Text>
+          <Text style={[styles.textHeader, { width: '50%' }]}>Joya</Text>
+          <Text style={[styles.textHeader, { width: '30%', textAlign: 'right' }]}>Total</Text>
         </View>
         {data.map((item, i) => (
           <View style={styles.tableRow} key={i}>
-            <Text style={[styles.textBody, { width: '20%' }]}>{item.codigo || item.id_producto || '-'}</Text>
-            <Text style={[styles.textBody, { width: '50%' }]}>{item.nombre_joya || item.nombre || '-'}</Text>
-            <Text style={[styles.textBody, { width: '30%', textAlign: 'right', paddingRight: 5 }]}>
+            <Text style={[styles.textBody, { width: '20%' }]}>{item.codigo || '-'}</Text>
+            <Text style={[styles.textBody, { width: '50%' }]}>{item.nombre || item.nombre_joya || '-'}</Text>
+            <Text style={[styles.textBody, { width: '30%', textAlign: 'right' }]}>
               ₡{Number(item.total_ingresos_colones || 0).toLocaleString()}
             </Text>
           </View>
@@ -44,7 +43,7 @@ function ReporteVentasPDF({ data, titulo }) {
   );
 }
 
-// 🚀 COMPONENTE PRINCIPAL: ReporteManager
+// 🚀 COMPONENTE PRINCIPAL
 export default function ReporteManager({ 
   seccionActivaReporte, 
   datosReporte, 
@@ -53,8 +52,11 @@ export default function ReporteManager({
   estiloCeldaTd 
 }) {
   
-  // Lógica de filtrado: Si el reporte es de ventas (dia o rango), filtramos los ingresos en 0
+  // 1. Lógica de filtrado para ventas
   const esVentas = seccionActivaReporte === 'dia' || seccionActivaReporte === 'rango';
+  const esProductos = seccionActivaReporte === 'productos';
+  const esInventario = seccionActivaReporte === 'inventario';
+
   const datosFiltrados = esVentas 
     ? datosReporte.filter(item => Number(item.total_ingresos_colones || 0) > 0)
     : datosReporte;
@@ -70,13 +72,8 @@ export default function ReporteManager({
     XLSX.writeFile(wb, `Reporte_Elo_${seccionActivaReporte}.xlsx`);
   };
 
-  const esProductos = seccionActivaReporte === 'productos';
-  const esInventario = seccionActivaReporte === 'inventario';
-
   return (
     <div style={{ marginTop: '20px' }}>
-      
-      {/* 🛠️ Barra de Herramientas */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
         <button onClick={exportarExcel} style={{ ...estiloBotonDescargaPRO, backgroundColor: '#1d6f42', width: 'auto', padding: '10px 25px' }}>
           Excel 📗
@@ -99,22 +96,25 @@ export default function ReporteManager({
         </PDFDownloadLink>
       </div>
 
-      {/* 📊 Visualización de Tabla */}
       <div style={{ overflowX: 'auto', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#fff' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
           <thead>
             <tr style={{ backgroundColor: '#1a1a1a', color: '#fff' }}>
+              <th style={estiloCeldaTh}>ID</th>
               <th style={estiloCeldaTh}>Código</th>
-              <th style={estiloCeldaTh}>Joya</th>
-              {esVentas ? (
+              <th style={estiloCeldaTh}>Nombre</th>
+              {esProductos ? (
                 <>
-                  <th style={estiloCeldaTh}>Ventas</th>
-                  <th style={estiloCeldaTh}>Total Ingresos</th>
+                  <th style={estiloCeldaTh}>Descripción</th>
+                  <th style={estiloCeldaTh}>Precio</th>
+                  <th style={estiloCeldaTh}>Stock</th>
+                  <th style={estiloCeldaTh}>Material</th>
+                  <th style={estiloCeldaTh}>Tipo</th>
                 </>
               ) : (
                 <>
-                  <th style={estiloCeldaTh}>Stock</th>
-                  <th style={estiloCeldaTh}>Precio</th>
+                  <th style={estiloCeldaTh}>Ventas</th>
+                  <th style={estiloCeldaTh}>Total Ingresos</th>
                 </>
               )}
             </tr>
@@ -122,18 +122,22 @@ export default function ReporteManager({
           <tbody>
             {datosFiltrados.map((item, i) => (
               <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={estiloCeldaTd}>{item.codigo || item.id_producto || 'N/A'}</td>
-                <td style={estiloCeldaTd}>{item.nombre_joya || item.nombre || 'Sin nombre'}</td>
+                <td style={estiloCeldaTd}>{item.id_producto || i + 1}</td>
+                <td style={estiloCeldaTd}>{item.codigo || 'N/A'}</td>
+                <td style={estiloCeldaTd}>{item.nombre || item.nombre_joya || 'Sin nombre'}</td>
                 
-                {esVentas ? (
+                {esProductos ? (
                   <>
-                    <td style={estiloCeldaTd}>{item.unidades_vendidas || 0} u.</td>
-                    <td style={estiloCeldaTd}>₡{Number(item.total_ingresos_colones || 0).toLocaleString()}</td>
+                    <td style={{ ...estiloCeldaTd, maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.descripcion || 'N/A'}</td>
+                    <td style={estiloCeldaTd}>₡{Number(item.precio || 0).toLocaleString()}</td>
+                    <td style={estiloCeldaTd}>{item.stock || 0} u.</td>
+                    <td style={estiloCeldaTd}>{item.material || 'N/A'}</td>
+                    <td style={estiloCeldaTd}>{item.tipo_producto || 'N/A'}</td>
                   </>
                 ) : (
                   <>
-                    <td style={estiloCeldaTd}>{item.stock || 0} u.</td>
-                    <td style={estiloCeldaTd}>₡{Number(item.precio || 0).toLocaleString()}</td>
+                    <td style={estiloCeldaTd}>{item.unidades_vendidas || 0} u.</td>
+                    <td style={estiloCeldaTd}>₡{Number(item.total_ingresos_colones || 0).toLocaleString()}</td>
                   </>
                 )}
               </tr>
