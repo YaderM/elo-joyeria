@@ -7,31 +7,27 @@ import GestionInventario from '../components/GestionInventario';
 import GestionCategorias from '../components/GestionCategorias';
 import GestionPromociones from '../components/GestionPromociones'; 
 import GestionPedidos from '../components/GestionPedidos';
-import ReporteManager from '../components/ReporteManager'; // ✅ INTEGRADO
+import ReporteManager from '../components/ReporteManager'; 
 
 function AdminPanel() {
   const navigate = useNavigate();
   const [seccionActiva, setSeccionActiva] = useState('inventario');
   
-  // 🔌 Constante del API y configuración de seguridad
   const API_URL = 'https://elo-joyeria-backend.vercel.app/api';
   const getConfig = () => ({
     headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
   });
 
-  // 📦 Estados Globales de Datos
   const [productos, setProductos] = useState([]);
   const [materiales, setMateriales] = useState([]);
   const [tipos, setTipos] = useState([]);
   const [cargando, setCargando] = useState(true);
 
-  // 📊 Estados del Módulo Profesional de Reportes Analíticos
   const [seccionActivaReporte, setSeccionActivaReporte] = useState('inventario');
   const [datosReporte, setDatosReporte] = useState([]);
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
 
-  // 🔮 Estados para el Modal de Producto Único
   const [mostrarModal, setMostrarModal] = useState(false);
   const [editandoId, setEditandoId] = useState(null);
   const [formProducto, setFormProducto] = useState({
@@ -48,11 +44,12 @@ function AdminPanel() {
     }
   }, [navigate]);
 
+  // Ajuste para que solo se cargue el inventario cuando la sección sea esa
   useEffect(() => {
-    if (productos.length > 0 && datosReporte.length === 0 && seccionActivaReporte === 'inventario') {
+    if (seccionActivaReporte === 'inventario' && productos.length > 0) {
       setDatosReporte(productos);
     }
-  }, [productos, datosReporte, seccionActivaReporte]);
+  }, [productos, seccionActivaReporte]);
 
   const cargarProductos = async () => {
     try {
@@ -80,20 +77,20 @@ function AdminPanel() {
     }
   };
 
-  // ✅ LÓGICA CENTRALIZADA PARA REPORTES (INTEGRADA)
   const manejarCambioTipoReporte = async (tipo) => {
     setSeccionActivaReporte(tipo);
-    setDatosReporte([]); 
-    try {
-      if (tipo === 'inventario') {
-        setDatosReporte(productos);
-      } else if (tipo === 'dia') {
-        // Llama a los datos de ventas de hoy
+    if (tipo === 'inventario') {
+      setDatosReporte(productos);
+    } else if (tipo === 'dia') {
+      try {
         const respuesta = await axios.get(`${API_URL}/ventas/datos-reporte`, getConfig());
         setDatosReporte(respuesta.data);
+      } catch (error) {
+        console.error("Error al obtener ventas de hoy:", error);
+        setDatosReporte([]);
       }
-    } catch (error) {
-      console.error("Error al obtener datos del reporte:", error);
+    } else {
+      setDatosReporte([]);
     }
   };
 
@@ -103,7 +100,6 @@ function AdminPanel() {
       return;
     }
     try {
-      // LLAMADA A LA VISTA ESPECÍFICA DE RANGO
       const respuesta = await axios.get(`${API_URL}/reporte_venta_pro?desde=${fechaInicio}&hasta=${fechaFin}`, getConfig());
       setDatosReporte(respuesta.data);
       setSeccionActivaReporte('rango');

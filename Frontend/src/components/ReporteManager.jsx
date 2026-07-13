@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
   textBody: { fontSize: 9, paddingLeft: 5 }
 });
 
-// 📄 Molde del PDF para Ventas (Ajustado para coincidir con la tabla)
+// 📄 Molde del PDF para Ventas
 function ReporteVentasPDF({ data, titulo }) {
   return (
     <Document>
@@ -64,8 +64,8 @@ export default function ReporteManager({
     XLSX.writeFile(wb, `Reporte_Elo_${seccionActivaReporte}.xlsx`);
   };
 
-  // Determinamos si estamos en modo "Ventas" (Cualquiera que no sea inventario)
-  const esModoVentas = seccionActivaReporte !== 'inventario';
+  // LÓGICA: ¿Es reporte de inventario o reporte de ventas (dia/rango)?
+  const esInventario = seccionActivaReporte === 'inventario';
 
   return (
     <div style={{ marginTop: '20px' }}>
@@ -78,7 +78,7 @@ export default function ReporteManager({
 
         <PDFDownloadLink 
           document={
-            seccionActivaReporte === 'inventario' 
+            esInventario 
             ? <ReporteProductosPDF productos={datosReporte} /> 
             : <ReporteVentasPDF data={datosReporte} titulo={`Reporte de ${seccionActivaReporte}`} />
           } 
@@ -100,7 +100,7 @@ export default function ReporteManager({
             <tr style={{ backgroundColor: '#1a1a1a', color: '#fff' }}>
               <th style={estiloCeldaTh}>Código</th>
               <th style={estiloCeldaTh}>Joya</th>
-              {!esModoVentas ? (
+              {esInventario ? (
                 <>
                   <th style={estiloCeldaTh}>Stock</th>
                   <th style={estiloCeldaTh}>Precio</th>
@@ -119,7 +119,7 @@ export default function ReporteManager({
                 <td style={estiloCeldaTd}>{item.codigo || item.id_producto || 'N/A'}</td>
                 <td style={estiloCeldaTd}>{item.nombre_joya || item.nombre || 'Sin nombre'}</td>
                 
-                {!esModoVentas ? (
+                {esInventario ? (
                   <>
                     <td style={estiloCeldaTd}>{item.stock || 0} u.</td>
                     <td style={estiloCeldaTd}>₡{Number(item.precio || 0).toLocaleString()}</td>
