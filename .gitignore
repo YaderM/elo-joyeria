@@ -1,0 +1,12 @@
+# Ignorar carpetas de dependencias de Node
+**/node_modules/
+
+# Ignorar variables de entorno con credenciales secretas
+**/.env
+
+# Ignorar carpetas de compilación de Vite
+**/dist/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
