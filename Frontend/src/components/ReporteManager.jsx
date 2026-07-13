@@ -53,18 +53,24 @@ export default function ReporteManager({
   estiloCeldaTd 
 }) {
   
-  if (!datosReporte || datosReporte.length === 0) {
+  // Lógica de filtrado: Si el reporte es de ventas (dia o rango), filtramos los ingresos en 0
+  const esVentas = seccionActivaReporte === 'dia' || seccionActivaReporte === 'rango';
+  const datosFiltrados = esVentas 
+    ? datosReporte.filter(item => Number(item.total_ingresos_colones || 0) > 0)
+    : datosReporte;
+
+  if (!datosFiltrados || datosFiltrados.length === 0) {
     return <div style={{ padding: '20px', color: '#777' }}>No hay resultados disponibles para esta selección.</div>;
   }
 
   const exportarExcel = () => {
     const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(datosReporte);
+    const ws = XLSX.utils.json_to_sheet(datosFiltrados);
     XLSX.utils.book_append_sheet(wb, ws, "Reporte");
     XLSX.writeFile(wb, `Reporte_Elo_${seccionActivaReporte}.xlsx`);
   };
 
-  // LÓGICA: ¿Es reporte de inventario o reporte de ventas (dia/rango)?
+  const esProductos = seccionActivaReporte === 'productos';
   const esInventario = seccionActivaReporte === 'inventario';
 
   return (
@@ -78,9 +84,9 @@ export default function ReporteManager({
 
         <PDFDownloadLink 
           document={
-            esInventario 
-            ? <ReporteProductosPDF productos={datosReporte} /> 
-            : <ReporteVentasPDF data={datosReporte} titulo={`Reporte de ${seccionActivaReporte}`} />
+            (esInventario || esProductos) 
+            ? <ReporteProductosPDF productos={datosFiltrados} /> 
+            : <ReporteVentasPDF data={datosFiltrados} titulo={`Reporte de ${seccionActivaReporte}`} />
           } 
           fileName={`Reporte_Elo_${seccionActivaReporte}.pdf`}
           style={{ textDecoration: 'none' }}
@@ -100,34 +106,34 @@ export default function ReporteManager({
             <tr style={{ backgroundColor: '#1a1a1a', color: '#fff' }}>
               <th style={estiloCeldaTh}>Código</th>
               <th style={estiloCeldaTh}>Joya</th>
-              {esInventario ? (
-                <>
-                  <th style={estiloCeldaTh}>Stock</th>
-                  <th style={estiloCeldaTh}>Precio</th>
-                </>
-              ) : (
+              {esVentas ? (
                 <>
                   <th style={estiloCeldaTh}>Ventas</th>
                   <th style={estiloCeldaTh}>Total Ingresos</th>
+                </>
+              ) : (
+                <>
+                  <th style={estiloCeldaTh}>Stock</th>
+                  <th style={estiloCeldaTh}>Precio</th>
                 </>
               )}
             </tr>
           </thead>
           <tbody>
-            {datosReporte.map((item, i) => (
+            {datosFiltrados.map((item, i) => (
               <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
                 <td style={estiloCeldaTd}>{item.codigo || item.id_producto || 'N/A'}</td>
                 <td style={estiloCeldaTd}>{item.nombre_joya || item.nombre || 'Sin nombre'}</td>
                 
-                {esInventario ? (
-                  <>
-                    <td style={estiloCeldaTd}>{item.stock || 0} u.</td>
-                    <td style={estiloCeldaTd}>₡{Number(item.precio || 0).toLocaleString()}</td>
-                  </>
-                ) : (
+                {esVentas ? (
                   <>
                     <td style={estiloCeldaTd}>{item.unidades_vendidas || 0} u.</td>
                     <td style={estiloCeldaTd}>₡{Number(item.total_ingresos_colones || 0).toLocaleString()}</td>
+                  </>
+                ) : (
+                  <>
+                    <td style={estiloCeldaTd}>{item.stock || 0} u.</td>
+                    <td style={estiloCeldaTd}>₡{Number(item.precio || 0).toLocaleString()}</td>
                   </>
                 )}
               </tr>

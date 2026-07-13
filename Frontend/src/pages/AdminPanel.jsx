@@ -44,7 +44,6 @@ function AdminPanel() {
     }
   }, [navigate]);
 
-  // Ajuste para que solo se cargue el inventario cuando la sección sea esa
   useEffect(() => {
     if (seccionActivaReporte === 'inventario' && productos.length > 0) {
       setDatosReporte(productos);
@@ -80,6 +79,8 @@ function AdminPanel() {
   const manejarCambioTipoReporte = async (tipo) => {
     setSeccionActivaReporte(tipo);
     if (tipo === 'inventario') {
+      setDatosReporte(productos);
+    } else if (tipo === 'productos') {
       setDatosReporte(productos);
     } else if (tipo === 'dia') {
       try {
@@ -231,6 +232,7 @@ function AdminPanel() {
               
               <div style={{ display: 'flex', gap: '15px', marginBottom: '30px' }}>
                 <button onClick={() => manejarCambioTipoReporte('inventario')} style={seccionActivaReporte === 'inventario' ? estiloBotonFiltroActivo : estiloBotonFiltro}>📋 Inventario</button>
+                <button onClick={() => manejarCambioTipoReporte('productos')} style={seccionActivaReporte === 'productos' ? estiloBotonFiltroActivo : estiloBotonFiltro}>🛍️ Reporte Productos</button>
                 <button onClick={() => manejarCambioTipoReporte('dia')} style={seccionActivaReporte === 'dia' ? estiloBotonFiltroActivo : estiloBotonFiltro}>📈 Ventas de Hoy</button>
                 <button onClick={() => setSeccionActivaReporte('rango')} style={seccionActivaReporte === 'rango' ? estiloBotonFiltroActivo : estiloBotonFiltro}>🗓️ Rango de Fechas</button>
               </div>
