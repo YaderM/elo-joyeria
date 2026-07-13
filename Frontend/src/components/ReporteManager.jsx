@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
   textBody: { fontSize: 9, paddingLeft: 5 }
 });
 
-// 📄 Molde del PDF para Ventas
+// 📄 Molde del PDF para Ventas (Ajustado para coincidir con la tabla)
 function ReporteVentasPDF({ data, titulo }) {
   return (
     <Document>
@@ -32,7 +32,7 @@ function ReporteVentasPDF({ data, titulo }) {
         </View>
         {data.map((item, i) => (
           <View style={styles.tableRow} key={i}>
-            <Text style={[styles.textBody, { width: '20%' }]}>{item.codigo || '-'}</Text>
+            <Text style={[styles.textBody, { width: '20%' }]}>{item.codigo || item.id_producto || '-'}</Text>
             <Text style={[styles.textBody, { width: '50%' }]}>{item.nombre_joya || item.nombre || '-'}</Text>
             <Text style={[styles.textBody, { width: '30%', textAlign: 'right', paddingRight: 5 }]}>
               ₡{Number(item.total_ingresos_colones || 0).toLocaleString()}
@@ -54,7 +54,7 @@ export default function ReporteManager({
 }) {
   
   if (!datosReporte || datosReporte.length === 0) {
-    return <div style={{ padding: '20px', color: '#777' }}>No hay resultados disponibles.</div>;
+    return <div style={{ padding: '20px', color: '#777' }}>No hay resultados disponibles para esta selección.</div>;
   }
 
   const exportarExcel = () => {
@@ -63,6 +63,9 @@ export default function ReporteManager({
     XLSX.utils.book_append_sheet(wb, ws, "Reporte");
     XLSX.writeFile(wb, `Reporte_Elo_${seccionActivaReporte}.xlsx`);
   };
+
+  // Determinamos si estamos en modo "Ventas" (Cualquiera que no sea inventario)
+  const esModoVentas = seccionActivaReporte !== 'inventario';
 
   return (
     <div style={{ marginTop: '20px' }}>
@@ -97,7 +100,7 @@ export default function ReporteManager({
             <tr style={{ backgroundColor: '#1a1a1a', color: '#fff' }}>
               <th style={estiloCeldaTh}>Código</th>
               <th style={estiloCeldaTh}>Joya</th>
-              {seccionActivaReporte === 'inventario' ? (
+              {!esModoVentas ? (
                 <>
                   <th style={estiloCeldaTh}>Stock</th>
                   <th style={estiloCeldaTh}>Precio</th>
@@ -113,17 +116,17 @@ export default function ReporteManager({
           <tbody>
             {datosReporte.map((item, i) => (
               <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={estiloCeldaTd}>{item.codigo || 'N/A'}</td>
+                <td style={estiloCeldaTd}>{item.codigo || item.id_producto || 'N/A'}</td>
                 <td style={estiloCeldaTd}>{item.nombre_joya || item.nombre || 'Sin nombre'}</td>
                 
-                {seccionActivaReporte === 'inventario' ? (
+                {!esModoVentas ? (
                   <>
-                    <td style={estiloCeldaTd}>{item.stock || 0}</td>
+                    <td style={estiloCeldaTd}>{item.stock || 0} u.</td>
                     <td style={estiloCeldaTd}>₡{Number(item.precio || 0).toLocaleString()}</td>
                   </>
                 ) : (
                   <>
-                    <td style={estiloCeldaTd}>{item.unidades_vendidas || 0}</td>
+                    <td style={estiloCeldaTd}>{item.unidades_vendidas || 0} u.</td>
                     <td style={estiloCeldaTd}>₡{Number(item.total_ingresos_colones || 0).toLocaleString()}</td>
                   </>
                 )}

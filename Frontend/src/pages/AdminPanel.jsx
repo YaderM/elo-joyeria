@@ -80,30 +80,33 @@ function AdminPanel() {
     }
   };
 
+  // ✅ LÓGICA CENTRALIZADA PARA REPORTES (INTEGRADA)
   const manejarCambioTipoReporte = async (tipo) => {
     setSeccionActivaReporte(tipo);
-    if (tipo === 'inventario') {
-      setDatosReporte(productos);
-    } else if (tipo === 'dia') {
-      try {
-        const hoy = new Date().toISOString().slice(0, 10);
-        const respuesta = await axios.get(`${API_URL}/ventas?fecha=${hoy}`, getConfig());
+    setDatosReporte([]); 
+    try {
+      if (tipo === 'inventario') {
+        setDatosReporte(productos);
+      } else if (tipo === 'dia') {
+        // Llama a los datos de ventas de hoy
+        const respuesta = await axios.get(`${API_URL}/ventas/datos-reporte`, getConfig());
         setDatosReporte(respuesta.data);
-      } catch (error) {
-        console.error("Error al obtener ventas diarias:", error);
-        setDatosReporte([]); 
       }
+    } catch (error) {
+      console.error("Error al obtener datos del reporte:", error);
     }
   };
 
   const procesarFiltroFechasVentas = async () => {
     if (!fechaInicio || !fechaFin) {
-      alert('Por favor selecciona ambas fechas para efectuar el filtro analítico.');
+      alert('Por favor selecciona ambas fechas.');
       return;
     }
     try {
-      const respuesta = await axios.get(`${API_URL}/ventas?desde=${fechaInicio}&hasta=${fechaFin}`, getConfig());
+      // LLAMADA A LA VISTA ESPECÍFICA DE RANGO
+      const respuesta = await axios.get(`${API_URL}/reporte_venta_pro?desde=${fechaInicio}&hasta=${fechaFin}`, getConfig());
       setDatosReporte(respuesta.data);
+      setSeccionActivaReporte('rango');
     } catch (error) {
       console.error("Error al filtrar rango de ventas:", error);
       setDatosReporte([]);
@@ -250,7 +253,6 @@ function AdminPanel() {
                 </div>
               )}
               
-              {/* Delegación de la visualización y descarga al Manager */}
               <ReporteManager 
                 seccionActivaReporte={seccionActivaReporte}
                 datosReporte={datosReporte}

@@ -138,12 +138,12 @@ function ReporteProductosPDF({ productos }) {
                 </Text>
               </View>
               <View style={styles.colPrecio}>
-                <Text>₡{Number(prod.precio).toLocaleString('es-CR')}</Text>
+                <Text>₡{Number(prod.precio || 0).toLocaleString('es-CR')}</Text>
               </View>
               <View style={styles.colOferta}>
                 <Text style={{ fontWeight: prod.precio_oferta ? 'bold' : 'normal' }}>
                   {prod.precio_oferta && prod.precio_oferta > 0 
-                    ? `₡${Number(prod.precio_oferta).toLocaleString('es-CR')}` 
+                    ? `₡${Number(prod.precio_oferta || 0).toLocaleString('es-CR')}` 
                     : '-'
                   }
                 </Text>
