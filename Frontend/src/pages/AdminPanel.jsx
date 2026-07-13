@@ -2,16 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-// 🌟 ADICIONES: Herramienta de descarga y moldes de PDF
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import ReporteProductosPDF from '../components/ReporteProductosPDF';
-import ReporteVentasPDF from '../components/ReporteVentasPDF';
-
 // Componentes modulares
 import GestionInventario from '../components/GestionInventario';
 import GestionCategorias from '../components/GestionCategorias';
 import GestionPromociones from '../components/GestionPromociones'; 
-import GestionPedidos from '../components/GestionPedidos'; // ✅ INTEGRADO
+import GestionPedidos from '../components/GestionPedidos';
+import ReporteManager from '../components/ReporteManager'; // ✅ INTEGRADO
 
 function AdminPanel() {
   const navigate = useNavigate();
@@ -233,7 +229,7 @@ function AdminPanel() {
               <p style={{ color: '#555', marginTop: 0, marginBottom: '25px', fontSize: '0.95rem' }}>
                 Selecciona un módulo analítico para visualizar la información en tiempo real.
               </p>
-              {/* Bloque de reportes original mantenido */}
+              
               <div style={{ display: 'flex', gap: '15px', marginBottom: '30px' }}>
                 <button onClick={() => manejarCambioTipoReporte('inventario')} style={seccionActivaReporte === 'inventario' ? estiloBotonFiltroActivo : estiloBotonFiltro}>📋 Inventario</button>
                 <button onClick={() => manejarCambioTipoReporte('dia')} style={seccionActivaReporte === 'dia' ? estiloBotonFiltroActivo : estiloBotonFiltro}>📈 Ventas de Hoy</button>
@@ -254,33 +250,19 @@ function AdminPanel() {
                 </div>
               )}
               
-              {/* Tabla de Reportes */}
-              <div style={{ marginBottom: '30px', overflowX: 'auto', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#fff' }}>
-                {datosReporte && datosReporte.length > 0 ? (
-                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
-                    <thead>
-                      <tr style={{ backgroundColor: '#1a1a1a', color: '#fff' }}>
-                        <th style={estiloCeldaTh}>Detalle</th>
-                        <th style={estiloCeldaTh}>Datos</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {datosReporte.map((item, index) => (
-                        <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
-                          <td style={estiloCeldaTd}>{item.nombre || item.id_venta}</td>
-                          <td style={estiloCeldaTd}>{item.stock || item.total}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                ) : <p style={{ padding: '20px' }}>No hay datos.</p>}
-              </div>
+              {/* Delegación de la visualización y descarga al Manager */}
+              <ReporteManager 
+                seccionActivaReporte={seccionActivaReporte}
+                datosReporte={datosReporte}
+                estiloBotonDescargaPRO={estiloBotonDescargaPRO}
+                estiloCeldaTh={estiloCeldaTh}
+                estiloCeldaTd={estiloCeldaTd}
+              />
             </div>
           )}
         </div>
       </main>
 
-      {/* Modal original */}
       {mostrarModal && (
         <div style={estiloOverlayModal}>
           <div style={estiloCuerpoModal}>
@@ -298,7 +280,6 @@ function AdminPanel() {
   );
 }
 
-// Estilos mantenidos exactamente igual
 const estiloSidebar = { width: '260px', backgroundColor: '#1a1a1a', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '30px 0' };
 const estiloBrand = { padding: '0 25px 25px 25px', borderBottom: '1px solid #333', textAlign: 'center' };
 const estiloBotonSidebar = { width: '100%', textAlign: 'left', padding: '14px 25px', background: 'none', border: 'none', color: '#aaa', fontSize: '0.95rem', cursor: 'pointer', display: 'block' };
