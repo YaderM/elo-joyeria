@@ -15,6 +15,35 @@ const styles = StyleSheet.create({
   textBody: { fontSize: 9, paddingLeft: 5 }
 });
 
+// 📄 PDF Detallado para Reporte Productos
+function ReporteProductosCompletoPDF({ productos }) {
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Joyería Elo - Reporte de Productos</Text>
+        </View>
+        <View style={styles.tableRowHeader}>
+          <Text style={[styles.textHeader, { width: '15%' }]}>Código</Text>
+          <Text style={[styles.textHeader, { width: '35%' }]}>Nombre</Text>
+          <Text style={[styles.textHeader, { width: '20%' }]}>Precio</Text>
+          <Text style={[styles.textHeader, { width: '10%' }]}>Stock</Text>
+          <Text style={[styles.textHeader, { width: '20%' }]}>Tipo</Text>
+        </View>
+        {productos.map((p, i) => (
+          <View style={styles.tableRow} key={i}>
+            <Text style={[styles.textBody, { width: '15%' }]}>{p.codigo || '-'}</Text>
+            <Text style={[styles.textBody, { width: '35%' }]}>{p.nombre || '-'}</Text>
+            <Text style={[styles.textBody, { width: '20%' }]}>₡{Number(p.precio || 0).toLocaleString()}</Text>
+            <Text style={[styles.textBody, { width: '10%' }]}>{p.stock || 0}</Text>
+            <Text style={[styles.textBody, { width: '20%' }]}>{p.tipo_producto || '-'}</Text>
+          </View>
+        ))}
+      </Page>
+    </Document>
+  );
+}
+
 // 📄 Molde del PDF para Ventas
 function ReporteVentasPDF({ data, titulo }) {
   return (
@@ -43,7 +72,6 @@ function ReporteVentasPDF({ data, titulo }) {
   );
 }
 
-// 🚀 COMPONENTE PRINCIPAL
 export default function ReporteManager({ 
   seccionActivaReporte, 
   datosReporte, 
@@ -52,7 +80,6 @@ export default function ReporteManager({
   estiloCeldaTd 
 }) {
   
-  // 1. Lógica de filtrado para ventas
   const esVentas = seccionActivaReporte === 'dia' || seccionActivaReporte === 'rango';
   const esProductos = seccionActivaReporte === 'productos';
   const esInventario = seccionActivaReporte === 'inventario';
@@ -81,9 +108,11 @@ export default function ReporteManager({
 
         <PDFDownloadLink 
           document={
-            (esInventario || esProductos) 
-            ? <ReporteProductosPDF productos={datosFiltrados} /> 
-            : <ReporteVentasPDF data={datosFiltrados} titulo={`Reporte de ${seccionActivaReporte}`} />
+            esProductos 
+            ? <ReporteProductosCompletoPDF productos={datosFiltrados} /> 
+            : esInventario 
+              ? <ReporteProductosPDF productos={datosFiltrados} /> 
+              : <ReporteVentasPDF data={datosFiltrados} titulo={`Reporte de ${seccionActivaReporte}`} />
           } 
           fileName={`Reporte_Elo_${seccionActivaReporte}.pdf`}
           style={{ textDecoration: 'none' }}
