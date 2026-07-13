@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const GestionPedidos = () => {
+const GestionPedidos = ({ onPedidoConfirmado }) => {
   const [pedidos, setPedidos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const API_URL = 'https://elo-joyeria-backend.vercel.app/api';
@@ -14,7 +14,6 @@ const GestionPedidos = () => {
   const cargarPedidos = async () => {
     try {
       setCargando(true);
-      // AJUSTE: La ruta es /ventas/pendientes
       const res = await axios.get(`${API_URL}/ventas/pendientes`, getConfig());
       setPedidos(res.data);
     } catch (error) {
@@ -28,10 +27,14 @@ const GestionPedidos = () => {
     if (!window.confirm("¿Confirmar este pedido y rebajar el stock?")) return;
     
     try {
-      // AJUSTE: La ruta es /ventas/pendientes/:id/aprobar
       await axios.put(`${API_URL}/ventas/pendientes/${idVenta}/aprobar`, {}, getConfig());
       alert("Pedido aprobado y stock actualizado.");
+      
       cargarPedidos(); 
+      
+      // Se ejecuta el callback para notificar al panel que hubo un cambio
+      if (onPedidoConfirmado) onPedidoConfirmado();
+      
     } catch (error) {
       console.error("Error al confirmar:", error);
       alert("Error al procesar la aprobación.");
@@ -58,7 +61,6 @@ const GestionPedidos = () => {
               <td style={estiloTd}>
                 {(() => {
                   try {
-                    // Nota: Si el error persiste al leer, verifica si detalle_productos viene como objeto o string
                     const carrito = typeof p.detalle_productos === 'string' 
                                     ? JSON.parse(p.detalle_productos) 
                                     : p.detalle_productos;

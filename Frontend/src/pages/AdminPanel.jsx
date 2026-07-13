@@ -78,9 +78,7 @@ function AdminPanel() {
 
   const manejarCambioTipoReporte = async (tipo) => {
     setSeccionActivaReporte(tipo);
-    if (tipo === 'inventario') {
-      setDatosReporte(productos);
-    } else if (tipo === 'productos') {
+    if (tipo === 'inventario' || tipo === 'productos') {
       setDatosReporte(productos);
     } else if (tipo === 'dia') {
       try {
@@ -101,12 +99,13 @@ function AdminPanel() {
       return;
     }
     try {
-      const respuesta = await axios.get(`${API_URL}/reporte_venta_pro?desde=${fechaInicio}&hasta=${fechaFin}`, getConfig());
+      const respuesta = await axios.get(`${API_URL}/ventas/ventas_pendientes?desde=${fechaInicio}&hasta=${fechaFin}`, getConfig());
       setDatosReporte(respuesta.data);
       setSeccionActivaReporte('rango');
     } catch (error) {
-      console.error("Error al filtrar rango de ventas:", error);
+      console.error("Error al filtrar ventas de la tabla ventas_pendientes:", error);
       setDatosReporte([]);
+      alert('Error al obtener los datos de la base de datos.');
     }
   };
 
@@ -221,7 +220,7 @@ function AdminPanel() {
           )}
 
           {seccionActiva === 'pedidos' && (
-            <GestionPedidos />
+            <GestionPedidos onPedidoConfirmado={() => cargarProductos()} />
           )}
 
           {seccionActiva === 'reportes' && (

@@ -48,12 +48,19 @@ router.put('/pendientes/:id/aprobar', async (req, res) => {
         if (connection) connection.release();
     }
 });
-router.get('/datos-reporte', async (req, res) => {
+router.get('/ventas_pendientes', async (req, res) => {
+    const { desde, hasta } = req.query;
+    let connection;
     try {
-        const [rows] = await db.query("SELECT * FROM reporte_ventas_pro");
+        connection = await db.getConnection();
+        // Filtramos por fecha (asumiendo que tu tabla tiene una columna 'fecha_registro' o similar)
+        const query = "SELECT * FROM ventas_pendientes WHERE fecha_registro BETWEEN ? AND ?";
+        const [rows] = await connection.query(query, [desde, hasta]);
         res.json(rows);
     } catch (error) {
-        res.status(500).json({ error: "Error al obtener reporte" });
+        res.status(500).json({ error: 'Error al filtrar ventas' });
+    } finally {
+        if (connection) connection.release();
     }
 });
 
