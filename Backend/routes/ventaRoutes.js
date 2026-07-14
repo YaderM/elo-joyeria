@@ -48,17 +48,30 @@ router.put('/pendientes/:id/aprobar', async (req, res) => {
         if (connection) connection.release();
     }
 });
+
 router.get('/ventas_pendientes', async (req, res) => {
     const { desde, hasta } = req.query;
+    
+    // Validación para evitar consultas con parámetros vacíos
+    if (!desde || !hasta) {
+        return res.status(400).json({ error: 'Parámetros de fecha incompletos' });
+    }
+
     let connection;
     try {
         connection = await db.getConnection();
-        // Filtramos por fecha (asumiendo que tu tabla tiene una columna 'fecha_registro' o similar)
-        const query = "SELECT * FROM ventas_pendientes WHERE fecha_registro BETWEEN ? AND ?";
+        
+        // Consulta usando el nombre real de columna: fecha_creacion
+        const query = `
+            SELECT * FROM ventas_pendientes 
+            WHERE DATE(fecha_creacion) BETWEEN ? AND ?
+        `;
+        
         const [rows] = await connection.query(query, [desde, hasta]);
         res.json(rows);
     } catch (error) {
-        res.status(500).json({ error: 'Error al filtrar ventas' });
+        console.error("Error SQL:", error);
+        res.status(500).json({ error: 'Error en servidor: ' + error.message });
     } finally {
         if (connection) connection.release();
     }
