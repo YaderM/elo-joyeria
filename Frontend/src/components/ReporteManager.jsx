@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 import { Page, Text, View, Document, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer';
 import ReporteProductosPDF from './ReporteProductosPDF';
@@ -44,7 +44,7 @@ function ReporteProductosCompletoPDF({ productos }) {
   );
 }
 
-// 📄 PDF Molde para Ventas Pendientes/Realizadas
+// 📄 PDF Molde para Ventas
 function ReporteVentasPDF({ data, titulo }) {
   return (
     <Document>
@@ -54,15 +54,15 @@ function ReporteVentasPDF({ data, titulo }) {
           <Text style={styles.subtitle}>{titulo}</Text>
         </View>
         <View style={styles.tableRowHeader}>
-          <Text style={[styles.textHeader, { width: '20%' }]}>Fecha</Text>
-          <Text style={[styles.textHeader, { width: '40%' }]}>Productos</Text>
+          <Text style={[styles.textHeader, { width: '15%' }]}>Fecha</Text>
+          <Text style={[styles.textHeader, { width: '45%' }]}>Productos</Text>
           <Text style={[styles.textHeader, { width: '20%' }]}>Estado</Text>
           <Text style={[styles.textHeader, { width: '20%', textAlign: 'right' }]}>Total</Text>
         </View>
         {data.map((item, i) => (
           <View style={styles.tableRow} key={i}>
-            <Text style={[styles.textBody, { width: '20%' }]}>{item.fecha_registro}</Text>
-            <Text style={[styles.textBody, { width: '40%' }]}>{item.detalle_productos ? JSON.parse(item.detalle_productos).map(p => p.nombre).join(', ') : '-'}</Text>
+            <Text style={[styles.textBody, { width: '15%' }]}>{item.fecha_registro?.split('T')[0]}</Text>
+            <Text style={[styles.textBody, { width: '45%' }]}>{item.detalle_productos ? JSON.parse(item.detalle_productos).map(p => p.nombre).join(', ') : '-'}</Text>
             <Text style={[styles.textBody, { width: '20%' }]}>{item.estado}</Text>
             <Text style={[styles.textBody, { width: '20%', textAlign: 'right' }]}>₡{Number(item.total_venta || 0).toLocaleString()}</Text>
           </View>
@@ -72,24 +72,25 @@ function ReporteVentasPDF({ data, titulo }) {
   );
 }
 
-export default function ReporteManager({ 
-  seccionActivaReporte, 
-  datosReporte, 
-  estiloBotonDescargaPRO, 
-  estiloCeldaTh, 
-  estiloCeldaTd 
-}) {
-  
-  const esVentas = seccionActivaReporte === 'dia' || seccionActivaReporte === 'rango';
-  const esProductos = seccionActivaReporte === 'productos';
-  const esInventario = seccionActivaReporte === 'inventario';
+export default function ReporteManager({ seccionActivaReporte, datosReporte, estiloBotonDescargaPRO, estiloCeldaTh, estiloCeldaTd }) {
+  const [filtroEstado, setFiltroEstado] = useState('TODAS');
 
-  const datosFiltrados = datosReporte || [];
+  const datosFiltrados = useMemo(() => {
+    let base = datosReporte || [];
+    if ((seccionActivaReporte === 'dia' || seccionActivaReporte === 'rango') && filtroEstado !== 'TODAS') {
+      return base.filter(item => item.estado === filtroEstado);
+    }
+    return base;
+  }, [datosReporte, filtroEstado, seccionActivaReporte]);
+
+  const totalAcumulado = useMemo(() => 
+    datosFiltrados.reduce((acc, curr) => acc + Number(curr.total_venta || 0), 0), 
+  [datosFiltrados]);
 
   const parseDetalle = (detalle) => {
     try {
       const arr = typeof detalle === 'string' ? JSON.parse(detalle) : detalle;
-      return arr.map(i => i.nombre).join(', ');
+      return arr.map(i => `${i.cantidad || 1}x ${i.nombre}`).join(', ');
     } catch { return 'Detalle error'; }
   };
 
@@ -100,31 +101,36 @@ export default function ReporteManager({
     XLSX.writeFile(wb, `Reporte_Elo_${seccionActivaReporte}.xlsx`);
   };
 
-  if (!datosFiltrados || datosFiltrados.length === 0) {
-    return <div style={{ padding: '20px', color: '#777' }}>No hay resultados disponibles para esta selección.</div>;
-  }
+  const esVentas = seccionActivaReporte === 'dia' || seccionActivaReporte === 'rango';
+  const esProductos = seccionActivaReporte === 'productos';
+  const esInventario = seccionActivaReporte === 'inventario';
 
   return (
     <div style={{ marginTop: '20px' }}>
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-        <button onClick={exportarExcel} style={{ ...estiloBotonDescargaPRO, backgroundColor: '#1d6f42', width: 'auto', padding: '10px 25px' }}>Excel 📗</button>
+      {(esVentas) && (
+        <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#f9f9f9', borderRadius: '8px', display: 'flex', gap: '20px', alignItems: 'center' }}>
+          <div>
+            <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Filtrar Estado:</label><br/>
+            <select onChange={(e) => setFiltroEstado(e.target.value)} value={filtroEstado} style={{ padding: '5px' }}>
+              <option value="TODAS">Todas</option>
+              <option value="CONFIRMADA">Confirmadas</option>
+              <option value="PENDIENTE">Pendientes</option>
+            </select>
+          </div>
+          <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+            <span style={{ fontSize: '0.8rem', color: '#666' }}>Total en lista:</span>
+            <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#1a1a1a' }}>₡{totalAcumulado.toLocaleString('es-CR')}</div>
+          </div>
+        </div>
+      )}
 
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+        <button onClick={exportarExcel} style={{ ...estiloBotonDescargaPRO, backgroundColor: '#1d6f42', width: 'auto' }}>Excel 📗</button>
         <PDFDownloadLink 
-          document={
-            esProductos 
-            ? <ReporteProductosCompletoPDF productos={datosFiltrados} /> 
-            : esInventario 
-              ? <ReporteProductosPDF productos={datosFiltrados} /> 
-              : <ReporteVentasPDF data={datosFiltrados} titulo={`Reporte de ${seccionActivaReporte}`} />
-          } 
+          document={esProductos ? <ReporteProductosCompletoPDF productos={datosFiltrados} /> : esInventario ? <ReporteProductosPDF productos={datosFiltrados} /> : <ReporteVentasPDF data={datosFiltrados} titulo={`Reporte de ${seccionActivaReporte}`} />}
           fileName={`Reporte_Elo_${seccionActivaReporte}.pdf`}
-          style={{ textDecoration: 'none' }}
         >
-          {({ loading }) => (
-            <button style={{ ...estiloBotonDescargaPRO, width: 'auto', padding: '10px 25px' }}>
-              {loading ? 'Preparando...' : 'PDF 📕'}
-            </button>
-          )}
+          {({ loading }) => <button style={{ ...estiloBotonDescargaPRO, width: 'auto' }}>{loading ? '...' : 'PDF 📕'}</button>}
         </PDFDownloadLink>
       </div>
 
@@ -133,55 +139,42 @@ export default function ReporteManager({
           <thead>
             <tr style={{ backgroundColor: '#1a1a1a', color: '#fff' }}>
               <th style={estiloCeldaTh}>{esVentas ? 'Fecha' : 'ID'}</th>
-              <th style={estiloCeldaTh}>{esVentas ? 'Cliente' : 'Código'}</th>
-              <th style={estiloCeldaTh}>{esVentas ? 'Productos' : 'Nombre'}</th>
+              <th style={estiloCeldaTh}>{esVentas ? 'Email' : 'Código'}</th>
+              <th style={estiloCeldaTh}>{esVentas ? 'Detalle' : 'Nombre'}</th>
               {esProductos ? (
                 <>
-                  <th style={estiloCeldaTh}>Descripción</th>
                   <th style={estiloCeldaTh}>Precio</th>
                   <th style={estiloCeldaTh}>Stock</th>
-                  <th style={estiloCeldaTh}>Material</th>
-                  <th style={estiloCeldaTh}>Tipo</th>
                 </>
               ) : esVentas ? (
                 <>
                   <th style={estiloCeldaTh}>Estado</th>
                   <th style={estiloCeldaTh}>Total</th>
                 </>
-              ) : (
-                <th style={estiloCeldaTh}>Ventas</th>
-              )}
+              ) : null}
             </tr>
           </thead>
           <tbody>
-            {datosFiltrados.map((item, i) => (
+            {datosFiltrados.length > 0 ? datosFiltrados.map((item, i) => (
               <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={estiloCeldaTd}>{item.fecha_registro || item.id_producto || i + 1}</td>
-                <td style={estiloCeldaTd}>{item.email || item.codigo || 'N/A'}</td>
-                <td style={estiloCeldaTd}>{esVentas ? parseDetalle(item.detalle_productos) : (item.nombre || 'Sin nombre')}</td>
-                
+                <td style={estiloCeldaTd}>{esVentas ? item.fecha_registro?.split('T')[0] : item.id_producto}</td>
+                <td style={estiloCeldaTd}>{item.email_cliente || item.codigo}</td>
+                <td style={estiloCeldaTd}>{esVentas ? parseDetalle(item.detalle_productos) : item.nombre}</td>
                 {esProductos ? (
                   <>
-                    <td style={{ ...estiloCeldaTd, maxWidth: '200px' }}>{item.descripcion || 'N/A'}</td>
                     <td style={estiloCeldaTd}>₡{Number(item.precio || 0).toLocaleString()}</td>
-                    <td style={estiloCeldaTd}>{item.stock || 0} u.</td>
-                    <td style={estiloCeldaTd}>{item.material || 'N/A'}</td>
-                    <td style={estiloCeldaTd}>{item.tipo_producto || 'N/A'}</td>
+                    <td style={estiloCeldaTd}>{item.stock}</td>
                   </>
                 ) : esVentas ? (
                   <>
                     <td style={estiloCeldaTd}>
-                      <span style={{ padding: '2px 6px', borderRadius: '4px', background: item.estado === 'CONFIRMADA' ? '#e8f5e9' : '#fff3e0' }}>
-                        {item.estado}
-                      </span>
+                      <span style={{ padding: '2px 8px', borderRadius: '10px', background: item.estado === 'CONFIRMADA' ? '#e8f5e9' : '#fff3e0' }}>{item.estado}</span>
                     </td>
                     <td style={estiloCeldaTd}>₡{Number(item.total_venta || 0).toLocaleString()}</td>
                   </>
-                ) : (
-                  <td style={estiloCeldaTd}>{item.unidades_vendidas || 0} u.</td>
-                )}
+                ) : null}
               </tr>
-            ))}
+            )) : <tr><td colSpan="5" style={{ padding: '20px', textAlign: 'center' }}>No hay resultados.</td></tr>}
           </tbody>
         </table>
       </div>
