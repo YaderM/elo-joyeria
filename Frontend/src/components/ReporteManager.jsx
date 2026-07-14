@@ -61,9 +61,11 @@ function ReporteVentasPDF({ data, titulo }) {
         </View>
         {data.map((item, i) => (
           <View style={styles.tableRow} key={i}>
-            <Text style={[styles.textBody, { width: '20%' }]}>{item.fecha_creacion}</Text>
-            <Text style={[styles.textBody, { width: '40%' }]}>{item.detalle_productos ? JSON.parse(item.detalle_productos).map(p => p.nombre).join(', ') : '-'}</Text>
-            <Text style={[styles.textBody, { width: '20%' }]}>{item.estado}</Text>
+            <Text style={[styles.textBody, { width: '20%' }]}>{item.fecha_creacion || 'N/A'}</Text>
+            <Text style={[styles.textBody, { width: '40%' }]}>
+                {item.detalle_productos ? (typeof item.detalle_productos === 'string' ? JSON.parse(item.detalle_productos).map(p => p.nombre).join(', ') : item.detalle_productos.map(p => p.nombre).join(', ')) : '-'}
+            </Text>
+            <Text style={[styles.textBody, { width: '20%' }]}>{item.estado || 'N/A'}</Text>
             <Text style={[styles.textBody, { width: '20%', textAlign: 'right' }]}>₡{Number(item.monto_total || 0).toLocaleString()}</Text>
           </View>
         ))}
@@ -79,7 +81,6 @@ export default function ReporteManager({
   estiloCeldaTh, 
   estiloCeldaTd 
 }) {
-  
   const [filtroEstado, setFiltroEstado] = useState('TODAS');
   
   const datosFiltrados = useMemo(() => {
@@ -165,11 +166,15 @@ export default function ReporteManager({
               <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
                 {esVentas ? (
                   <>
-                    <td style={estiloCeldaTd}>{item.fecha_creacion}</td>
+                    <td style={estiloCeldaTd}>{item.fecha_creacion || 'N/A'}</td>
                     <td style={estiloCeldaTd}>{item.nombre_cliente || 'N/A'}</td>
-                    <td style={estiloCeldaTd}>{item.detalle_productos ? JSON.parse(item.detalle_productos).map(p => p.nombre).join(', ') : '-'}</td>
                     <td style={estiloCeldaTd}>
-                      <span style={{ padding: '2px 6px', borderRadius: '4px', background: item.estado === 'CONFIRMADA' ? '#e8f5e9' : '#fff3e0' }}>{item.estado}</span>
+                      {item.detalle_productos 
+                        ? (typeof item.detalle_productos === 'string' ? JSON.parse(item.detalle_productos).map(p => p.nombre).join(', ') : item.detalle_productos.map(p => p.nombre).join(', ')) 
+                        : '-'}
+                    </td>
+                    <td style={estiloCeldaTd}>
+                      <span style={{ padding: '2px 6px', borderRadius: '4px', background: item.estado === 'CONFIRMADA' ? '#e8f5e9' : '#fff3e0' }}>{item.estado || 'N/A'}</span>
                     </td>
                     <td style={estiloCeldaTd}>₡{Number(item.monto_total || 0).toLocaleString()}</td>
                   </>
