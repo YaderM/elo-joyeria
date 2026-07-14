@@ -44,7 +44,7 @@ function ReporteProductosCompletoPDF({ productos }) {
   );
 }
 
-// 📄 PDF Molde para Ventas Pendientes/Realizadas
+// 📄 PDF Molde para Ventas
 function ReporteVentasPDF({ data, titulo }) {
   return (
     <Document>
@@ -80,7 +80,6 @@ export default function ReporteManager({
   estiloCeldaTd 
 }) {
   
-  // LOGICA FILTRO ESTADO (Añadido)
   const [filtroEstado, setFiltroEstado] = useState('TODAS');
   
   const datosFiltrados = useMemo(() => {
@@ -108,8 +107,6 @@ export default function ReporteManager({
 
   return (
     <div style={{ marginTop: '20px' }}>
-      
-      {/* SECCION FILTRO */}
       {esVentas && (
         <div style={{ marginBottom: '15px', padding: '10px', background: '#f9f9f9', borderRadius: '5px' }}>
            <label style={{ marginRight: '10px' }}>Filtrar Estado:</label>
@@ -123,7 +120,6 @@ export default function ReporteManager({
 
       <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
         <button onClick={exportarExcel} style={{ ...estiloBotonDescargaPRO, backgroundColor: '#1d6f42', width: 'auto', padding: '10px 25px' }}>Excel 📗</button>
-
         <PDFDownloadLink 
           document={
             esProductos 
@@ -136,9 +132,7 @@ export default function ReporteManager({
           style={{ textDecoration: 'none' }}
         >
           {({ loading }) => (
-            <button style={{ ...estiloBotonDescargaPRO, width: 'auto', padding: '10px 25px' }}>
-              {loading ? 'Preparando...' : 'PDF 📕'}
-            </button>
+            <button style={{ ...estiloBotonDescargaPRO, width: 'auto', padding: '10px 25px' }}>{loading ? 'Preparando...' : 'PDF 📕'}</button>
           )}
         </PDFDownloadLink>
       </div>
@@ -150,7 +144,6 @@ export default function ReporteManager({
               <th style={estiloCeldaTh}>{esVentas ? 'Fecha' : esInventario ? 'Nombre' : 'ID'}</th>
               <th style={estiloCeldaTh}>{esVentas ? 'Cliente' : esInventario ? 'Stock' : 'Código'}</th>
               <th style={estiloCeldaTh}>{esVentas ? 'Productos' : esInventario ? 'Precio' : 'Nombre'}</th>
-              
               {esProductos ? (
                 <>
                   <th style={estiloCeldaTh}>Descripción</th>
@@ -173,12 +166,10 @@ export default function ReporteManager({
                 {esVentas ? (
                   <>
                     <td style={estiloCeldaTd}>{item.fecha_creacion}</td>
-                    <td style={estiloCeldaTd}>{item.email_cliente || 'N/A'}</td>
+                    <td style={estiloCeldaTd}>{item.nombre_cliente || 'N/A'}</td>
                     <td style={estiloCeldaTd}>{item.detalle_productos ? JSON.parse(item.detalle_productos).map(p => p.nombre).join(', ') : '-'}</td>
                     <td style={estiloCeldaTd}>
-                      <span style={{ padding: '2px 6px', borderRadius: '4px', background: item.estado === 'CONFIRMADA' ? '#e8f5e9' : '#fff3e0' }}>
-                        {item.estado}
-                      </span>
+                      <span style={{ padding: '2px 6px', borderRadius: '4px', background: item.estado === 'CONFIRMADA' ? '#e8f5e9' : '#fff3e0' }}>{item.estado}</span>
                     </td>
                     <td style={estiloCeldaTd}>₡{Number(item.monto_total || 0).toLocaleString()}</td>
                   </>
