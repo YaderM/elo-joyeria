@@ -83,9 +83,10 @@ export default function ReporteManager({
 }) {
   const [filtroEstado, setFiltroEstado] = useState('TODAS');
   
+  // LOGICA CORREGIDA: Si no es sección de ventas o el filtro es TODAS, devuelve todo.
   const datosFiltrados = useMemo(() => {
     let base = datosReporte || [];
-    if ((seccionActivaReporte === 'dia' || seccionActivaReporte === 'rango') && filtroEstado !== 'TODAS') {
+    if (esVentas && filtroEstado !== 'TODAS') {
       return base.filter(item => item.estado === filtroEstado);
     }
     return base;
@@ -103,7 +104,11 @@ export default function ReporteManager({
   };
 
   if (!datosFiltrados || datosFiltrados.length === 0) {
-    return <div style={{ padding: '20px', color: '#777' }}>No hay resultados disponibles.</div>;
+    return (
+        <div style={{ padding: '20px', color: '#777' }}>
+            No hay resultados. Total registros cargados: {datosReporte?.length || 0}
+        </div>
+    );
   }
 
   return (
