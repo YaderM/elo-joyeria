@@ -82,19 +82,20 @@ export default function ReporteManager({
   estiloCeldaTd 
 }) {
   const [filtroEstado, setFiltroEstado] = useState('TODAS');
+
+  // 1. Definir las constantes ANTES del useMemo
+  const esVentas = seccionActivaReporte === 'dia' || seccionActivaReporte === 'rango';
+  const esProductos = seccionActivaReporte === 'productos';
+  const esInventario = seccionActivaReporte === 'inventario';
   
-  // LOGICA CORREGIDA: Si no es sección de ventas o el filtro es TODAS, devuelve todo.
+  // 2. Ahora sí, el useMemo puede usar esas constantes sin error
   const datosFiltrados = useMemo(() => {
     let base = datosReporte || [];
     if (esVentas && filtroEstado !== 'TODAS') {
       return base.filter(item => item.estado === filtroEstado);
     }
     return base;
-  }, [datosReporte, filtroEstado, seccionActivaReporte]);
-
-  const esVentas = seccionActivaReporte === 'dia' || seccionActivaReporte === 'rango';
-  const esProductos = seccionActivaReporte === 'productos';
-  const esInventario = seccionActivaReporte === 'inventario';
+  }, [datosReporte, filtroEstado, esVentas]); // Dependencias corregidas
 
   const exportarExcel = () => {
     const wb = XLSX.utils.book_new();
@@ -104,11 +105,7 @@ export default function ReporteManager({
   };
 
   if (!datosFiltrados || datosFiltrados.length === 0) {
-    return (
-        <div style={{ padding: '20px', color: '#777' }}>
-            No hay resultados. Total registros cargados: {datosReporte?.length || 0}
-        </div>
-    );
+    return <div style={{ padding: '20px', color: '#777' }}>No hay resultados disponibles.</div>;
   }
 
   return (
