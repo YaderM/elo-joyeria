@@ -82,7 +82,13 @@ function AdminPanel() {
       setDatosReporte(productos);
     } else if (tipo === 'dia') {
       try {
-        const respuesta = await axios.get(`${API_URL}/ventas/datos-reporte`, getConfig());
+        // CORRECCIÓN: Apuntando a la ruta correcta que existe en tu backend (ventas_pendientes)
+        // Se envían fechas de hoy para obtener el reporte del día
+        const hoy = new Date().toISOString().split('T')[0];
+        const respuesta = await axios.get(`${API_URL}/ventas/ventas_pendientes`, {
+            ...getConfig(),
+            params: { desde: hoy, hasta: hoy }
+        });
         setDatosReporte(respuesta.data);
       } catch (error) {
         console.error("Error al obtener ventas de hoy:", error);
@@ -99,11 +105,15 @@ function AdminPanel() {
       return;
     }
     try {
-      const respuesta = await axios.get(`${API_URL}/ventas/ventas_pendientes?desde=${fechaInicio}&hasta=${fechaFin}`, getConfig());
+      // Llamada corregida con parámetros en el objeto de configuración
+      const respuesta = await axios.get(`${API_URL}/ventas/ventas_pendientes`, {
+          ...getConfig(),
+          params: { desde: fechaInicio, hasta: fechaFin }
+      });
       setDatosReporte(respuesta.data);
       setSeccionActivaReporte('rango');
     } catch (error) {
-      console.error("Error al filtrar ventas de la tabla ventas_pendientes:", error);
+      console.error("Error al filtrar ventas:", error);
       setDatosReporte([]);
       alert('Error al obtener los datos de la base de datos.');
     }
