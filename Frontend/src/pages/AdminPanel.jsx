@@ -110,6 +110,10 @@ function AdminPanel() {
           ...getConfig(),
           params: { desde: fechaInicio, hasta: fechaFin }
       });
+      
+      // Diagnóstico agregado:
+      console.log("Datos recibidos del servidor:", respuesta.data);
+      
       setDatosReporte(respuesta.data);
       setSeccionActivaReporte('rango');
     } catch (error) {
