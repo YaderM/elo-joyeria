@@ -83,19 +83,28 @@ export default function ReporteManager({
 }) {
   const [filtroEstado, setFiltroEstado] = useState('TODAS');
 
-  // 1. Definir las constantes ANTES del useMemo
+  // Función segura para parsear productos y evitar que el componente se rompa
+  const parsearProductosSeguro = (detalle) => {
+    try {
+      if (!detalle) return '-';
+      const items = typeof detalle === 'string' ? JSON.parse(detalle) : detalle;
+      return Array.isArray(items) ? items.map(p => p.nombre).join(', ') : '-';
+    } catch (e) {
+      return "Error en datos";
+    }
+  };
+
   const esVentas = seccionActivaReporte === 'dia' || seccionActivaReporte === 'rango';
   const esProductos = seccionActivaReporte === 'productos';
   const esInventario = seccionActivaReporte === 'inventario';
   
-  // 2. Ahora sí, el useMemo puede usar esas constantes sin error
   const datosFiltrados = useMemo(() => {
     let base = datosReporte || [];
     if (esVentas && filtroEstado !== 'TODAS') {
       return base.filter(item => item.estado === filtroEstado);
     }
     return base;
-  }, [datosReporte, filtroEstado, esVentas]); // Dependencias corregidas
+  }, [datosReporte, filtroEstado, esVentas]);
 
   const exportarExcel = () => {
     const wb = XLSX.utils.book_new();
@@ -170,11 +179,7 @@ export default function ReporteManager({
                   <>
                     <td style={estiloCeldaTd}>{item.fecha_creacion || 'N/A'}</td>
                     <td style={estiloCeldaTd}>{item.nombre_cliente || 'N/A'}</td>
-                    <td style={estiloCeldaTd}>
-                      {item.detalle_productos 
-                        ? (typeof item.detalle_productos === 'string' ? JSON.parse(item.detalle_productos).map(p => p.nombre).join(', ') : item.detalle_productos.map(p => p.nombre).join(', ')) 
-                        : '-'}
-                    </td>
+                    <td style={estiloCeldaTd}>{parsearProductosSeguro(item.detalle_productos)}</td>
                     <td style={estiloCeldaTd}>
                       <span style={{ padding: '2px 6px', borderRadius: '4px', background: item.estado === 'CONFIRMADA' ? '#e8f5e9' : '#fff3e0' }}>{item.estado || 'N/A'}</span>
                     </td>

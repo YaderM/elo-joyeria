@@ -12,6 +12,17 @@ const styles = StyleSheet.create({
 });
 
 export default function ReporteVentasPDF({ data }) {
+  // Función interna para parsear productos de forma segura
+  const parsearProductos = (detalle) => {
+    try {
+      if (!detalle) return '-';
+      const productos = typeof detalle === 'string' ? JSON.parse(detalle) : detalle;
+      return Array.isArray(productos) ? productos.map(p => p.nombre).join(', ') : '-';
+    } catch (e) {
+      return 'Error al cargar';
+    }
+  };
+
   // Calculamos el total general de todas las ventas mostradas
   const totalGeneral = data.reduce((acc, curr) => acc + Number(curr.monto_total || 0), 0);
 
@@ -36,10 +47,7 @@ export default function ReporteVentasPDF({ data }) {
             </Text>
             <Text style={[styles.textBody, { width: '25%' }]}>{item.nombre_cliente || 'N/A'}</Text>
             <Text style={[styles.textBody, { width: '35%' }]}>
-              {/* Aquí parseamos el JSON de detalle_productos */}
-              {item.detalle_productos 
-                ? JSON.parse(item.detalle_productos).map(p => p.nombre).join(', ') 
-                : '-'}
+              {parsearProductos(item.detalle_productos)}
             </Text>
             <Text style={[styles.textBody, { width: '20%', textAlign: 'right' }]}>
               ₡{Number(item.monto_total || 0).toLocaleString('es-CR')}

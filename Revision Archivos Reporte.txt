@@ -1,0 +1,574 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+// Componentes modulares
+import GestionInventario from '../components/GestionInventario';
+import GestionCategorias from '../components/GestionCategorias';
+import GestionPromociones from '../components/GestionPromociones'; 
+import GestionPedidos from '../components/GestionPedidos';
+import ReporteManager from '../components/ReporteManager'; 
+
+function AdminPanel() {
+  const navigate = useNavigate();
+  const [seccionActiva, setSeccionActiva] = useState('inventario');
+  
+  const API_URL = 'https://elo-joyeria-backend.vercel.app/api';
+  const getConfig = () => ({
+    headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+  });
+
+  const [productos, setProductos] = useState([]);
+  const [materiales, setMateriales] = useState([]);
+  const [tipos, setTipos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+
+  const [seccionActivaReporte, setSeccionActivaReporte] = useState('inventario');
+  const [datosReporte, setDatosReporte] = useState([]);
+  const [fechaInicio, setFechaInicio] = useState('');
+  const [fechaFin, setFechaFin] = useState('');
+
+  const [mostrarModal, setMostrarModal] = useState(false);
+  const [editandoId, setEditandoId] = useState(null);
+  const [formProducto, setFormProducto] = useState({
+    nombre: '', descripcion: '', precio: '', imagen_url: '', stock: '1', material_id: '', tipo_id: ''
+  });
+
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      navigate('/login');
+    } else {
+      cargarProductos();
+      cargarAuxiliares();
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    if (seccionActivaReporte === 'inventario' && productos.length > 0) {
+      setDatosReporte(productos);
+    }
+  }, [productos, seccionActivaReporte]);
+
+  const cargarProductos = async () => {
+    try {
+      setCargando(true);
+      const respuesta = await axios.get(`${API_URL}/productos`, getConfig());
+      setProductos(respuesta.data);
+    } catch (error) {
+      console.error("Error al traer productos:", error);
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        navigate('/login');
+      }
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const cargarAuxiliares = async () => {
+    try {
+      const resMateriales = await axios.get(`${API_URL}/productos/aux/materiales`, getConfig());
+      const resTipos = await axios.get(`${API_URL}/productos/aux/tipos`, getConfig());
+      setMateriales(resMateriales.data);
+      setTipos(resTipos.data);
+    } catch (error) {
+      console.error("Error al cargar datos auxiliares:", error);
+    }
+  };
+
+  const manejarCambioTipoReporte = async (tipo) => {
+    setSeccionActivaReporte(tipo);
+    if (tipo === 'inventario' || tipo === 'productos') {
+      setDatosReporte(productos);
+    } else if (tipo === 'dia') {
+      try {
+        const respuesta = await axios.get(`${API_URL}/ventas/datos-reporte`, getConfig());
+        setDatosReporte(respuesta.data);
+      } catch (error) {
+        console.error("Error al obtener ventas de hoy:", error);
+        setDatosReporte([]);
+      }
+    } else {
+      setDatosReporte([]);
+    }
+  };
+
+  const procesarFiltroFechasVentas = async () => {
+    if (!fechaInicio || !fechaFin) {
+      alert('Por favor selecciona ambas fechas.');
+      return;
+    }
+    try {
+      const respuesta = await axios.get(`${API_URL}/ventas/ventas_pendientes?desde=${fechaInicio}&hasta=${fechaFin}`, getConfig());
+      setDatosReporte(respuesta.data);
+      setSeccionActivaReporte('rango');
+    } catch (error) {
+      console.error("Error al filtrar ventas de la tabla ventas_pendientes:", error);
+      setDatosReporte([]);
+      alert('Error al obtener los datos de la base de datos.');
+    }
+  };
+
+  const iniciarEdicion = (producto) => {
+    setEditandoId(producto.id_producto);
+    setFormProducto({
+      nombre: producto.nombre || '',
+      descripcion: producto.descripcion || '',
+      precio: producto.precio || '',
+      imagen_url: producto.imagen_url || '',
+      stock: producto.stock !== undefined ? producto.stock : '1',
+      material_id: producto.material_id || producto.id_material || '',
+      tipo_id: producto.tipo_id || producto.id_tipo || ''
+    });
+    setMostrarModal(true);
+  };
+
+  const iniciarCreacion = () => {
+    setEditandoId(null);
+    setFormProducto({ nombre: '', descripcion: '', precio: '', imagen_url: '', stock: '1', material_id: '', tipo_id: '' });
+    setMostrarModal(true);
+  };
+
+  const guardarProducto = async (e) => {
+    e.preventDefault();
+    try {
+      const datosAEnviar = {
+        ...formProducto,
+        precio: parseFloat(formProducto.precio),
+        stock: parseInt(formProducto.stock, 10),
+        material_id: parseInt(formProducto.material_id, 10) || null,
+        tipo_id: parseInt(formProducto.tipo_id, 10) || null
+      };
+
+      if (editandoId) {
+        await axios.put(`${API_URL}/productos/${editandoId}`, datosAEnviar, getConfig());
+        alert('¡Joya actualizada con éxito!');
+      } else {
+        await axios.post(`${API_URL}/productos`, datosAEnviar, getConfig());
+        alert('¡Producto agregado con éxito!');
+      }
+      
+      setMostrarModal(false);
+      cargarProductos();
+    } catch (error) {
+      console.error("Error al guardar producto:", error);
+      alert('Hubo un error al guardar el producto.');
+    }
+  };
+
+  const manejarEliminar = async (id, nombre) => {
+    if (window.confirm(`¿Estás seguro de eliminar "${nombre}"?`)) {
+      try {
+        await axios.delete(`${API_URL}/productos/${id}`, getConfig());
+        alert('Producto eliminado.');
+        cargarProductos();
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', minHeight: '90vh', backgroundColor: '#f4f6f8', margin: 0 }}>
+      <aside style={estiloSidebar}>
+        <div>
+          <div style={estiloBrand}>
+            <h3 style={{ color: '#d4af37', fontSize: '1.2rem', fontWeight: '400', letterSpacing: '1.5px', margin: '0 0 5px 0' }}>ELO CONTROL</h3>
+            <p style={{ color: '#888', fontSize: '0.75rem', margin: 0, textTransform: 'uppercase' }}>Administrador</p>
+          </div>
+          <nav style={{ marginTop: '30px' }}>
+            <button onClick={() => setSeccionActiva('inventario')} style={seccionActiva === 'inventario' ? estiloBotonActivo : estiloBotonSidebar}>📦 Gestión de Inventario</button>
+            <button onClick={() => setSeccionActiva('categorias')} style={seccionActiva === 'categorias' ? estiloBotonActivo : estiloBotonSidebar}>🗂️ Categorías y Tipos</button>
+            <button onClick={() => setSeccionActiva('promociones')} style={seccionActiva === 'promociones' ? estiloBotonActivo : estiloBotonSidebar}>🏷️ Precios y Ofertas</button>
+            <button onClick={() => setSeccionActiva('pedidos')} style={seccionActiva === 'pedidos' ? estiloBotonActivo : estiloBotonSidebar}>🛒 Gestión de Pedidos</button>
+            <button onClick={() => setSeccionActiva('reportes')} style={seccionActiva === 'reportes' ? estiloBotonActivo : estiloBotonSidebar}>📊 Reportes PDF</button>
+          </nav>
+        </div>
+        <div style={{ padding: '0 20px' }}>
+          <button onClick={() => { localStorage.removeItem('adminToken'); navigate('/login'); }} style={estiloBotonCerrar}>🚪 Cerrar Sesión</button>
+        </div>
+      </aside>
+
+      <main style={{ flexGrow: 1, padding: '40px', overflowY: 'auto' }}>
+        <div style={estiloHeaderSeccion}>
+          <h2 style={{ fontSize: '1.6rem', fontWeight: '400', color: '#222', textTransform: 'uppercase' }}>
+            {seccionActiva === 'inventario' && '📦 Panel de Control de Inventario'}
+            {seccionActiva === 'categorias' && '🗂️ Configuración de Materiales y Tipos'}
+            {seccionActiva === 'promociones' && '🏷️ Campañas, Precios Especiales y Ofertas'}
+            {seccionActiva === 'pedidos' && '🛒 Gestión de Pedidos'}
+            {seccionActiva === 'reportes' && '📊 Generador de Reportes Analíticos'}
+          </h2>
+          <span style={estiloBadge}>🟢 Conexión Segura MySQL</span>
+        </div>
+
+        <div style={estiloContenedorBlanco}>
+          {seccionActiva === 'inventario' && (
+            cargando ? <p style={{ textAlign: 'center', color: '#777' }}>Consultando base de datos...</p> :
+            <GestionInventario 
+              productos={productos} materiales={materiales} tipos={tipos}
+              cargarProductos={cargarProductos} iniciarEdicion={iniciarEdicion}
+              iniciarCreacion={iniciarCreacion} manejarEliminar={manejarEliminar}
+            />
+          )}
+
+          {seccionActiva === 'categorias' && (
+            <GestionCategorias materiales={materiales} tipos={tipos} cargarAuxiliares={cargarAuxiliares} />
+          )}
+
+          {seccionActiva === 'promociones' && (
+            <GestionPromociones productos={productos} cargarProductos={cargarProductos} />
+          )}
+
+          {seccionActiva === 'pedidos' && (
+            <GestionPedidos onPedidoConfirmado={() => cargarProductos()} />
+          )}
+
+          {seccionActiva === 'reportes' && (
+            <div style={{ padding: '10px' }}>
+              <p style={{ color: '#555', marginTop: 0, marginBottom: '25px', fontSize: '0.95rem' }}>
+                Selecciona un módulo analítico para visualizar la información en tiempo real.
+              </p>
+              
+              <div style={{ display: 'flex', gap: '15px', marginBottom: '30px' }}>
+                <button onClick={() => manejarCambioTipoReporte('inventario')} style={seccionActivaReporte === 'inventario' ? estiloBotonFiltroActivo : estiloBotonFiltro}>📋 Inventario</button>
+                <button onClick={() => manejarCambioTipoReporte('productos')} style={seccionActivaReporte === 'productos' ? estiloBotonFiltroActivo : estiloBotonFiltro}>🛍️ Reporte Productos</button>
+                <button onClick={() => manejarCambioTipoReporte('dia')} style={seccionActivaReporte === 'dia' ? estiloBotonFiltroActivo : estiloBotonFiltro}>📈 Ventas de Hoy</button>
+                <button onClick={() => setSeccionActivaReporte('rango')} style={seccionActivaReporte === 'rango' ? estiloBotonFiltroActivo : estiloBotonFiltro}>🗓️ Rango de Fechas</button>
+              </div>
+
+              {seccionActivaReporte === 'rango' && (
+                <div style={{ display: 'flex', gap: '20px', alignItems: 'center', backgroundColor: '#f9f9f9', padding: '15px 20px', borderRadius: '6px', border: '1px solid #eee', marginBottom: '30px', maxWidth: '600px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 'bold', color: '#555', marginBottom: '5px' }}>DESDE</label>
+                    <input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} style={estiloInputFecha} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 'bold', color: '#555', marginBottom: '5px' }}>HASTA</label>
+                    <input type="date" value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} style={estiloInputFecha} />
+                  </div>
+                  <button onClick={procesarFiltroFechasVentas} style={{ padding: '10px 20px', border: 'none', backgroundColor: '#222', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem', marginTop: '18px', fontWeight: '500' }}>🔍 Consultar</button>
+                </div>
+              )}
+              
+              <ReporteManager 
+                seccionActivaReporte={seccionActivaReporte}
+                datosReporte={datosReporte}
+                estiloBotonDescargaPRO={estiloBotonDescargaPRO}
+                estiloCeldaTh={estiloCeldaTh}
+                estiloCeldaTd={estiloCeldaTd}
+              />
+            </div>
+          )}
+        </div>
+      </main>
+
+      {mostrarModal && (
+        <div style={estiloOverlayModal}>
+          <div style={estiloCuerpoModal}>
+            <h3 style={{ margin: '0 0 20px 0' }}>{editandoId ? '✏️ Editar Producto' : '✨ Nuevo Producto'}</h3>
+            <form onSubmit={guardarProducto}>
+              <input type="text" placeholder="Nombre" value={formProducto.nombre} onChange={(e) => setFormProducto({...formProducto, nombre: e.target.value})} style={estiloInputForm} />
+              <input type="number" placeholder="Precio" value={formProducto.precio} onChange={(e) => setFormProducto({...formProducto, precio: e.target.value})} style={estiloInputForm} />
+              <button type="submit" style={estiloBotonDescargaPRO}>Guardar</button>
+              <button type="button" onClick={() => setMostrarModal(false)} style={{ background: 'none', border: 'none', marginTop: '10px', cursor: 'pointer' }}>Cancelar</button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const estiloSidebar = { width: '260px', backgroundColor: '#1a1a1a', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '30px 0' };
+const estiloBrand = { padding: '0 25px 25px 25px', borderBottom: '1px solid #333', textAlign: 'center' };
+const estiloBotonSidebar = { width: '100%', textAlign: 'left', padding: '14px 25px', background: 'none', border: 'none', color: '#aaa', fontSize: '0.95rem', cursor: 'pointer', display: 'block' };
+const estiloBotonActivo = { ...estiloBotonSidebar, color: '#fff', backgroundColor: '#b59410', borderLeft: '4px solid #fff', fontWeight: '500' };
+const estiloBotonCerrar = { width: '100%', backgroundColor: '#333', color: '#ec5b5b', border: 'none', padding: '12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' };
+const estiloHeaderSeccion = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '35px', borderBottom: '1px solid #e0e0e0', paddingBottom: '15px' };
+const estiloBadge = { fontSize: '0.9rem', color: '#666', backgroundColor: '#fff', padding: '6px 15px', borderRadius: '20px', border: '1px solid #ddd' };
+const estiloContenedorBlanco = { backgroundColor: '#fff', borderRadius: '10px', padding: '30px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)', border: '1px solid #e6e6e6' };
+const estiloOverlayModal = { position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 };
+const estiloCuerpoModal = { backgroundColor: '#fff', width: '100%', maxWidth: '650px', padding: '30px', borderRadius: '8px' };
+const estiloInputForm = { width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ccc', borderRadius: '6px', boxSizing: 'border-box' };
+const estiloBotonFiltro = { padding: '10px 20px', border: '1px solid #ccc', background: '#fff', color: '#555', borderRadius: '4px', cursor: 'pointer', fontSize: '0.88rem', fontWeight: '500' };
+const estiloBotonFiltroActivo = { ...estiloBotonFiltro, background: '#222', color: '#fff', borderColor: '#222' };
+const estiloInputFecha = { padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '0.9rem', color: '#333' };
+const estiloBotonDescargaPRO = { width: '100%', background: '#222', color: '#fff', border: 'none', padding: '14px', fontSize: '0.9rem', letterSpacing: '1px', fontWeight: '600', borderRadius: '4px', cursor: 'pointer' };
+const estiloCeldaTh = { padding: '12px 15px', fontWeight: '500', fontSize: '0.85rem', textTransform: 'uppercase' };
+const estiloCeldaTd = { padding: '12px 15px', color: '#333' };
+
+export default AdminPanel;
+
+
+import React, { useState, useMemo } from 'react';
+import * as XLSX from 'xlsx';
+import { Page, Text, View, Document, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer';
+import ReporteProductosPDF from './ReporteProductosPDF';
+
+// 🎨 Estilos para el PDF
+const styles = StyleSheet.create({
+  page: { padding: 40, backgroundColor: '#ffffff', fontFamily: 'Helvetica' },
+  header: { marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#b59410', paddingBottom: 10 },
+  title: { fontSize: 16, fontWeight: 'bold', color: '#b59410', textTransform: 'uppercase' },
+  subtitle: { fontSize: 10, color: '#666', marginTop: 5 },
+  tableRowHeader: { flexDirection: 'row', backgroundColor: '#222', color: '#fff', borderRadius: 4, minHeight: 25, alignItems: 'center', marginTop: 15 },
+  tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#eee', minHeight: 30, alignItems: 'center' },
+  textHeader: { color: '#fff', fontSize: 8, fontWeight: 'bold', paddingLeft: 5 },
+  textBody: { fontSize: 8, paddingLeft: 5 }
+});
+
+// 📄 PDF Detallado para Productos
+function ReporteProductosCompletoPDF({ productos }) {
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <View style={styles.header}><Text style={styles.title}>Reporte Detallado de Productos</Text></View>
+        <View style={styles.tableRowHeader}>
+          <Text style={[styles.textHeader, { width: '10%' }]}>ID</Text>
+          <Text style={[styles.textHeader, { width: '25%' }]}>Código</Text>
+          <Text style={[styles.textHeader, { width: '30%' }]}>Nombre</Text>
+          <Text style={[styles.textHeader, { width: '15%' }]}>Precio</Text>
+          <Text style={[styles.textHeader, { width: '10%' }]}>Stock</Text>
+          <Text style={[styles.textHeader, { width: '10%' }]}>Material</Text>
+        </View>
+        {productos.map((p, i) => (
+          <View style={styles.tableRow} key={i}>
+            <Text style={[styles.textBody, { width: '10%' }]}>{p.id_producto}</Text>
+            <Text style={[styles.textBody, { width: '25%' }]}>{p.codigo || '-'}</Text>
+            <Text style={[styles.textBody, { width: '30%' }]}>{p.nombre || '-'}</Text>
+            <Text style={[styles.textBody, { width: '15%' }]}>₡{Number(p.precio || 0).toLocaleString()}</Text>
+            <Text style={[styles.textBody, { width: '10%' }]}>{p.stock || 0}</Text>
+            <Text style={[styles.textBody, { width: '10%' }]}>{p.material || '-'}</Text>
+          </View>
+        ))}
+      </Page>
+    </Document>
+  );
+}
+
+// 📄 PDF Molde para Ventas
+function ReporteVentasPDF({ data, titulo }) {
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Joyería Elo - Reporte</Text>
+          <Text style={styles.subtitle}>{titulo}</Text>
+        </View>
+        <View style={styles.tableRowHeader}>
+          <Text style={[styles.textHeader, { width: '20%' }]}>Fecha</Text>
+          <Text style={[styles.textHeader, { width: '40%' }]}>Productos</Text>
+          <Text style={[styles.textHeader, { width: '20%' }]}>Estado</Text>
+          <Text style={[styles.textHeader, { width: '20%', textAlign: 'right' }]}>Total</Text>
+        </View>
+        {data.map((item, i) => (
+          <View style={styles.tableRow} key={i}>
+            <Text style={[styles.textBody, { width: '20%' }]}>{item.fecha_creacion || 'N/A'}</Text>
+            <Text style={[styles.textBody, { width: '40%' }]}>
+                {item.detalle_productos ? (typeof item.detalle_productos === 'string' ? JSON.parse(item.detalle_productos).map(p => p.nombre).join(', ') : item.detalle_productos.map(p => p.nombre).join(', ')) : '-'}
+            </Text>
+            <Text style={[styles.textBody, { width: '20%' }]}>{item.estado || 'N/A'}</Text>
+            <Text style={[styles.textBody, { width: '20%', textAlign: 'right' }]}>₡{Number(item.monto_total || 0).toLocaleString()}</Text>
+          </View>
+        ))}
+      </Page>
+    </Document>
+  );
+}
+
+export default function ReporteManager({ 
+  seccionActivaReporte, 
+  datosReporte, 
+  estiloBotonDescargaPRO, 
+  estiloCeldaTh, 
+  estiloCeldaTd 
+}) {
+  const [filtroEstado, setFiltroEstado] = useState('TODAS');
+
+  // 1. Definir las constantes ANTES del useMemo
+  const esVentas = seccionActivaReporte === 'dia' || seccionActivaReporte === 'rango';
+  const esProductos = seccionActivaReporte === 'productos';
+  const esInventario = seccionActivaReporte === 'inventario';
+  
+  // 2. Ahora sí, el useMemo puede usar esas constantes sin error
+  const datosFiltrados = useMemo(() => {
+    let base = datosReporte || [];
+    if (esVentas && filtroEstado !== 'TODAS') {
+      return base.filter(item => item.estado === filtroEstado);
+    }
+    return base;
+  }, [datosReporte, filtroEstado, esVentas]); // Dependencias corregidas
+
+  const exportarExcel = () => {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(datosFiltrados);
+    XLSX.utils.book_append_sheet(wb, ws, "Reporte");
+    XLSX.writeFile(wb, `Reporte_Elo_${seccionActivaReporte}.xlsx`);
+  };
+
+  if (!datosFiltrados || datosFiltrados.length === 0) {
+    return <div style={{ padding: '20px', color: '#777' }}>No hay resultados disponibles.</div>;
+  }
+
+  return (
+    <div style={{ marginTop: '20px' }}>
+      {esVentas && (
+        <div style={{ marginBottom: '15px', padding: '10px', background: '#f9f9f9', borderRadius: '5px' }}>
+           <label style={{ marginRight: '10px' }}>Filtrar Estado:</label>
+           <select onChange={(e) => setFiltroEstado(e.target.value)} value={filtroEstado}>
+             <option value="TODAS">Todas</option>
+             <option value="CONFIRMADA">Confirmadas</option>
+             <option value="PENDIENTE">Pendientes</option>
+           </select>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+        <button onClick={exportarExcel} style={{ ...estiloBotonDescargaPRO, backgroundColor: '#1d6f42', width: 'auto', padding: '10px 25px' }}>Excel 📗</button>
+        <PDFDownloadLink 
+          document={
+            esProductos 
+            ? <ReporteProductosCompletoPDF productos={datosFiltrados} /> 
+            : esInventario 
+              ? <ReporteProductosPDF productos={datosFiltrados} /> 
+              : <ReporteVentasPDF data={datosFiltrados} titulo={`Reporte de ${seccionActivaReporte}`} />
+          } 
+          fileName={`Reporte_Elo_${seccionActivaReporte}.pdf`}
+          style={{ textDecoration: 'none' }}
+        >
+          {({ loading }) => (
+            <button style={{ ...estiloBotonDescargaPRO, width: 'auto', padding: '10px 25px' }}>{loading ? 'Preparando...' : 'PDF 📕'}</button>
+          )}
+        </PDFDownloadLink>
+      </div>
+
+      <div style={{ overflowX: 'auto', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#fff' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+          <thead>
+            <tr style={{ backgroundColor: '#1a1a1a', color: '#fff' }}>
+              <th style={estiloCeldaTh}>{esVentas ? 'Fecha' : esInventario ? 'Nombre' : 'ID'}</th>
+              <th style={estiloCeldaTh}>{esVentas ? 'Cliente' : esInventario ? 'Stock' : 'Código'}</th>
+              <th style={estiloCeldaTh}>{esVentas ? 'Productos' : esInventario ? 'Precio' : 'Nombre'}</th>
+              {esProductos ? (
+                <>
+                  <th style={estiloCeldaTh}>Descripción</th>
+                  <th style={estiloCeldaTh}>Precio</th>
+                  <th style={estiloCeldaTh}>Stock</th>
+                  <th style={estiloCeldaTh}>Material</th>
+                  <th style={estiloCeldaTh}>Tipo</th>
+                </>
+              ) : esVentas ? (
+                <>
+                  <th style={estiloCeldaTh}>Estado</th>
+                  <th style={estiloCeldaTh}>Total</th>
+                </>
+              ) : null}
+            </tr>
+          </thead>
+          <tbody>
+            {datosFiltrados.map((item, i) => (
+              <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
+                {esVentas ? (
+                  <>
+                    <td style={estiloCeldaTd}>{item.fecha_creacion || 'N/A'}</td>
+                    <td style={estiloCeldaTd}>{item.nombre_cliente || 'N/A'}</td>
+                    <td style={estiloCeldaTd}>
+                      {item.detalle_productos 
+                        ? (typeof item.detalle_productos === 'string' ? JSON.parse(item.detalle_productos).map(p => p.nombre).join(', ') : item.detalle_productos.map(p => p.nombre).join(', ')) 
+                        : '-'}
+                    </td>
+                    <td style={estiloCeldaTd}>
+                      <span style={{ padding: '2px 6px', borderRadius: '4px', background: item.estado === 'CONFIRMADA' ? '#e8f5e9' : '#fff3e0' }}>{item.estado || 'N/A'}</span>
+                    </td>
+                    <td style={estiloCeldaTd}>₡{Number(item.monto_total || 0).toLocaleString()}</td>
+                  </>
+                ) : esInventario ? (
+                  <>
+                    <td style={estiloCeldaTd}>{item.nombre}</td>
+                    <td style={estiloCeldaTd}>{item.stock || 0}</td>
+                    <td style={estiloCeldaTd}>₡{Number(item.precio || 0).toLocaleString()}</td>
+                  </>
+                ) : (
+                  <>
+                    <td style={estiloCeldaTd}>{item.id_producto}</td>
+                    <td style={estiloCeldaTd}>{item.codigo}</td>
+                    <td style={estiloCeldaTd}>{item.nombre}</td>
+                    <td style={estiloCeldaTd}>{item.descripcion || 'N/A'}</td>
+                    <td style={estiloCeldaTd}>₡{Number(item.precio || 0).toLocaleString()}</td>
+                    <td style={estiloCeldaTd}>{item.stock || 0} u.</td>
+                    <td style={estiloCeldaTd}>{item.material || 'N/A'}</td>
+                    <td style={estiloCeldaTd}>{item.tipo_producto || 'N/A'}</td>
+                  </>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+
+
+import React from 'react';
+import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
+
+const styles = StyleSheet.create({
+  page: { padding: 40, backgroundColor: '#ffffff', fontFamily: 'Helvetica' },
+  header: { marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#b59410', paddingBottom: 15 },
+  title: { fontSize: 20, fontWeight: 'bold', color: '#b59410', textTransform: 'uppercase' },
+  tableRowHeader: { flexDirection: 'row', backgroundColor: '#222', color: '#fff', borderRadius: 4, minHeight: 25, alignItems: 'center', marginTop: 15 },
+  tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#f0f0f0', minHeight: 30, alignItems: 'center' },
+  textHeader: { fontWeight: 'bold', fontSize: 8, color: '#fff', paddingLeft: 5 },
+  textBody: { fontSize: 8, paddingLeft: 5 }
+});
+
+export default function ReporteVentasPDF({ data }) {
+  // Calculamos el total general de todas las ventas mostradas
+  const totalGeneral = data.reduce((acc, curr) => acc + Number(curr.monto_total || 0), 0);
+
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Reporte de Ventas</Text>
+        </View>
+
+        <View style={styles.tableRowHeader}>
+          <Text style={[styles.textHeader, { width: '20%' }]}>Fecha</Text>
+          <Text style={[styles.textHeader, { width: '25%' }]}>Cliente</Text>
+          <Text style={[styles.textHeader, { width: '35%' }]}>Productos</Text>
+          <Text style={[styles.textHeader, { width: '20%', textAlign: 'right' }]}>Total</Text>
+        </View>
+
+        {data.map((item, i) => (
+          <View style={styles.tableRow} key={i}>
+            <Text style={[styles.textBody, { width: '20%' }]}>
+              {item.fecha_creacion ? new Date(item.fecha_creacion).toLocaleDateString() : '-'}
+            </Text>
+            <Text style={[styles.textBody, { width: '25%' }]}>{item.nombre_cliente || 'N/A'}</Text>
+            <Text style={[styles.textBody, { width: '35%' }]}>
+              {/* Aquí parseamos el JSON de detalle_productos */}
+              {item.detalle_productos 
+                ? JSON.parse(item.detalle_productos).map(p => p.nombre).join(', ') 
+                : '-'}
+            </Text>
+            <Text style={[styles.textBody, { width: '20%', textAlign: 'right' }]}>
+              ₡{Number(item.monto_total || 0).toLocaleString('es-CR')}
+            </Text>
+          </View>
+        ))}
+
+        <View style={{ marginTop: 20, borderTopWidth: 1, paddingTop: 10 }}>
+          <Text style={{ fontSize: 10, fontWeight: 'bold', textAlign: 'right' }}>
+            TOTAL RECAUDADO: ₡{totalGeneral.toLocaleString('es-CR')}
+          </Text>
+        </View>
+      </Page>
+    </Document>
+  );
+}
+
+
+
