@@ -83,7 +83,6 @@ export default function ReporteManager({
 }) {
   const [filtroEstado, setFiltroEstado] = useState('TODAS');
 
-  // Función segura para parsear productos y evitar que el componente se rompa
   const parsearProductosSeguro = (detalle) => {
     try {
       if (!detalle) return '-';
@@ -101,7 +100,7 @@ export default function ReporteManager({
   const datosFiltrados = useMemo(() => {
     let base = datosReporte || [];
     if (esVentas && filtroEstado !== 'TODAS') {
-      return base.filter(item => item.estado === filtroEstado);
+      return base.filter(item => (item.estado || 'PENDIENTE') === filtroEstado);
     }
     return base;
   }, [datosReporte, filtroEstado, esVentas]);
@@ -173,38 +172,43 @@ export default function ReporteManager({
             </tr>
           </thead>
           <tbody>
-            {datosFiltrados.map((item, i) => (
-              <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
-                {esVentas ? (
-                  <>
-                    <td style={estiloCeldaTd}>{item.fecha_creacion || 'N/A'}</td>
-                    <td style={estiloCeldaTd}>{item.nombre_cliente || 'N/A'}</td>
-                    <td style={estiloCeldaTd}>{parsearProductosSeguro(item.detalle_productos)}</td>
-                    <td style={estiloCeldaTd}>
-                      <span style={{ padding: '2px 6px', borderRadius: '4px', background: item.estado === 'CONFIRMADA' ? '#e8f5e9' : '#fff3e0' }}>{item.estado || 'N/A'}</span>
-                    </td>
-                    <td style={estiloCeldaTd}>₡{Number(item.monto_total || 0).toLocaleString()}</td>
-                  </>
-                ) : esInventario ? (
-                  <>
-                    <td style={estiloCeldaTd}>{item.nombre}</td>
-                    <td style={estiloCeldaTd}>{item.stock || 0}</td>
-                    <td style={estiloCeldaTd}>₡{Number(item.precio || 0).toLocaleString()}</td>
-                  </>
-                ) : (
-                  <>
-                    <td style={estiloCeldaTd}>{item.id_producto}</td>
-                    <td style={estiloCeldaTd}>{item.codigo}</td>
-                    <td style={estiloCeldaTd}>{item.nombre}</td>
-                    <td style={estiloCeldaTd}>{item.descripcion || 'N/A'}</td>
-                    <td style={estiloCeldaTd}>₡{Number(item.precio || 0).toLocaleString()}</td>
-                    <td style={estiloCeldaTd}>{item.stock || 0} u.</td>
-                    <td style={estiloCeldaTd}>{item.material || 'N/A'}</td>
-                    <td style={estiloCeldaTd}>{item.tipo_producto || 'N/A'}</td>
-                  </>
-                )}
-              </tr>
-            ))}
+            {datosFiltrados.map((item, i) => {
+              const fecha = item.fecha_creacion || item.fecha || 'N/A';
+              const cliente = item.nombre_cliente || item.cliente || 'N/A';
+              const estado = item.estado || 'PENDIENTE';
+              return (
+                <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
+                  {esVentas ? (
+                    <>
+                      <td style={estiloCeldaTd}>{typeof fecha === 'string' ? fecha.substring(0, 10) : fecha}</td>
+                      <td style={estiloCeldaTd}>{cliente}</td>
+                      <td style={estiloCeldaTd}>{parsearProductosSeguro(item.detalle_productos)}</td>
+                      <td style={estiloCeldaTd}>
+                        <span style={{ padding: '2px 6px', borderRadius: '4px', background: estado === 'CONFIRMADA' ? '#e8f5e9' : '#fff3e0' }}>{estado}</span>
+                      </td>
+                      <td style={estiloCeldaTd}>₡{Number(item.monto_total || 0).toLocaleString()}</td>
+                    </>
+                  ) : esInventario ? (
+                    <>
+                      <td style={estiloCeldaTd}>{item.nombre}</td>
+                      <td style={estiloCeldaTd}>{item.stock || 0}</td>
+                      <td style={estiloCeldaTd}>₡{Number(item.precio || 0).toLocaleString()}</td>
+                    </>
+                  ) : (
+                    <>
+                      <td style={estiloCeldaTd}>{item.id_producto}</td>
+                      <td style={estiloCeldaTd}>{item.codigo}</td>
+                      <td style={estiloCeldaTd}>{item.nombre}</td>
+                      <td style={estiloCeldaTd}>{item.descripcion || 'N/A'}</td>
+                      <td style={estiloCeldaTd}>₡{Number(item.precio || 0).toLocaleString()}</td>
+                      <td style={estiloCeldaTd}>{item.stock || 0} u.</td>
+                      <td style={estiloCeldaTd}>{item.material || 'N/A'}</td>
+                      <td style={estiloCeldaTd}>{item.tipo_producto || 'N/A'}</td>
+                    </>
+                  )}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
