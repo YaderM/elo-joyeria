@@ -82,8 +82,6 @@ function AdminPanel() {
       setDatosReporte(productos);
     } else if (tipo === 'dia') {
       try {
-        // CORRECCIÓN: Apuntando a la ruta correcta que existe en tu backend (ventas_pendientes)
-        // Se envían fechas de hoy para obtener el reporte del día
         const hoy = new Date().toISOString().split('T')[0];
         const respuesta = await axios.get(`${API_URL}/ventas/ventas_pendientes`, {
             ...getConfig(),
@@ -105,15 +103,10 @@ function AdminPanel() {
       return;
     }
     try {
-      // Llamada corregida con parámetros en el objeto de configuración
       const respuesta = await axios.get(`${API_URL}/ventas/ventas_pendientes`, {
           ...getConfig(),
           params: { desde: fechaInicio, hasta: fechaFin }
       });
-      
-      // Diagnóstico agregado:
-      console.log("Datos recibidos del servidor:", respuesta.data);
-      
       setDatosReporte(respuesta.data);
       setSeccionActivaReporte('rango');
     } catch (error) {
@@ -161,7 +154,6 @@ function AdminPanel() {
         await axios.post(`${API_URL}/productos`, datosAEnviar, getConfig());
         alert('¡Producto agregado con éxito!');
       }
-      
       setMostrarModal(false);
       cargarProductos();
     } catch (error) {
@@ -224,52 +216,27 @@ function AdminPanel() {
               iniciarCreacion={iniciarCreacion} manejarEliminar={manejarEliminar}
             />
           )}
-
-          {seccionActiva === 'categorias' && (
-            <GestionCategorias materiales={materiales} tipos={tipos} cargarAuxiliares={cargarAuxiliares} />
-          )}
-
-          {seccionActiva === 'promociones' && (
-            <GestionPromociones productos={productos} cargarProductos={cargarProductos} />
-          )}
-
-          {seccionActiva === 'pedidos' && (
-            <GestionPedidos onPedidoConfirmado={() => cargarProductos()} />
-          )}
-
+          {seccionActiva === 'categorias' && <GestionCategorias materiales={materiales} tipos={tipos} cargarAuxiliares={cargarAuxiliares} />}
+          {seccionActiva === 'promociones' && <GestionPromociones productos={productos} cargarProductos={cargarProductos} />}
+          {seccionActiva === 'pedidos' && <GestionPedidos onPedidoConfirmado={() => cargarProductos()} />}
           {seccionActiva === 'reportes' && (
             <div style={{ padding: '10px' }}>
-              <p style={{ color: '#555', marginTop: 0, marginBottom: '25px', fontSize: '0.95rem' }}>
-                Selecciona un módulo analítico para visualizar la información en tiempo real.
-              </p>
-              
               <div style={{ display: 'flex', gap: '15px', marginBottom: '30px' }}>
                 <button onClick={() => manejarCambioTipoReporte('inventario')} style={seccionActivaReporte === 'inventario' ? estiloBotonFiltroActivo : estiloBotonFiltro}>📋 Inventario</button>
                 <button onClick={() => manejarCambioTipoReporte('productos')} style={seccionActivaReporte === 'productos' ? estiloBotonFiltroActivo : estiloBotonFiltro}>🛍️ Reporte Productos</button>
                 <button onClick={() => manejarCambioTipoReporte('dia')} style={seccionActivaReporte === 'dia' ? estiloBotonFiltroActivo : estiloBotonFiltro}>📈 Ventas de Hoy</button>
                 <button onClick={() => setSeccionActivaReporte('rango')} style={seccionActivaReporte === 'rango' ? estiloBotonFiltroActivo : estiloBotonFiltro}>🗓️ Rango de Fechas</button>
               </div>
-
               {seccionActivaReporte === 'rango' && (
-                <div style={{ display: 'flex', gap: '20px', alignItems: 'center', backgroundColor: '#f9f9f9', padding: '15px 20px', borderRadius: '6px', border: '1px solid #eee', marginBottom: '30px', maxWidth: '600px' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 'bold', color: '#555', marginBottom: '5px' }}>DESDE</label>
-                    <input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} style={estiloInputFecha} />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 'bold', color: '#555', marginBottom: '5px' }}>HASTA</label>
-                    <input type="date" value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} style={estiloInputFecha} />
-                  </div>
-                  <button onClick={procesarFiltroFechasVentas} style={{ padding: '10px 20px', border: 'none', backgroundColor: '#222', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem', marginTop: '18px', fontWeight: '500' }}>🔍 Consultar</button>
+                <div style={{ display: 'flex', gap: '20px', alignItems: 'center', backgroundColor: '#f9f9f9', padding: '15px 20px', borderRadius: '6px', border: '1px solid #eee', marginBottom: '30px' }}>
+                  <input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} style={estiloInputFecha} />
+                  <input type="date" value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} style={estiloInputFecha} />
+                  <button onClick={procesarFiltroFechasVentas} style={{ padding: '10px 20px', backgroundColor: '#222', color: '#fff', borderRadius: '4px', cursor: 'pointer' }}>🔍 Consultar</button>
                 </div>
               )}
-              
               <ReporteManager 
-                seccionActivaReporte={seccionActivaReporte}
-                datosReporte={datosReporte}
-                estiloBotonDescargaPRO={estiloBotonDescargaPRO}
-                estiloCeldaTh={estiloCeldaTh}
-                estiloCeldaTd={estiloCeldaTd}
+                seccionActivaReporte={seccionActivaReporte} datosReporte={datosReporte}
+                estiloBotonDescargaPRO={estiloBotonDescargaPRO} estiloCeldaTh={estiloCeldaTh} estiloCeldaTd={estiloCeldaTd}
               />
             </div>
           )}
@@ -281,10 +248,23 @@ function AdminPanel() {
           <div style={estiloCuerpoModal}>
             <h3 style={{ margin: '0 0 20px 0' }}>{editandoId ? '✏️ Editar Producto' : '✨ Nuevo Producto'}</h3>
             <form onSubmit={guardarProducto}>
-              <input type="text" placeholder="Nombre" value={formProducto.nombre} onChange={(e) => setFormProducto({...formProducto, nombre: e.target.value})} style={estiloInputForm} />
-              <input type="number" placeholder="Precio" value={formProducto.precio} onChange={(e) => setFormProducto({...formProducto, precio: e.target.value})} style={estiloInputForm} />
+              <input type="text" placeholder="Nombre" value={formProducto.nombre} onChange={(e) => setFormProducto({...formProducto, nombre: e.target.value})} style={estiloInputForm} required />
+              <input type="text" placeholder="URL Imagen" value={formProducto.imagen_url} onChange={(e) => setFormProducto({...formProducto, imagen_url: e.target.value})} style={estiloInputForm} />
+              <input type="number" placeholder="Precio" value={formProducto.precio} onChange={(e) => setFormProducto({...formProducto, precio: e.target.value})} style={estiloInputForm} required />
+              <input type="number" placeholder="Stock" value={formProducto.stock} onChange={(e) => setFormProducto({...formProducto, stock: e.target.value})} style={estiloInputForm} />
+              <textarea placeholder="Descripción" value={formProducto.descripcion} onChange={(e) => setFormProducto({...formProducto, descripcion: e.target.value})} style={{...estiloInputForm, height: '80px'}}></textarea>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <select value={formProducto.material_id} onChange={(e) => setFormProducto({...formProducto, material_id: e.target.value})} style={estiloInputForm}>
+                  <option value="">Material</option>
+                  {materiales.map(m => <option key={m.id_material} value={m.id_material}>{m.nombre}</option>)}
+                </select>
+                <select value={formProducto.tipo_id} onChange={(e) => setFormProducto({...formProducto, tipo_id: e.target.value})} style={estiloInputForm}>
+                  <option value="">Tipo</option>
+                  {tipos.map(t => <option key={t.id_tipo} value={t.id_tipo}>{t.nombre}</option>)}
+                </select>
+              </div>
               <button type="submit" style={estiloBotonDescargaPRO}>Guardar</button>
-              <button type="button" onClick={() => setMostrarModal(false)} style={{ background: 'none', border: 'none', marginTop: '10px', cursor: 'pointer' }}>Cancelar</button>
+              <button type="button" onClick={() => setMostrarModal(false)} style={{ width: '100%', background: '#eee', border: 'none', padding: '10px', marginTop: '10px', cursor: 'pointer' }}>Cancelar</button>
             </form>
           </div>
         </div>
