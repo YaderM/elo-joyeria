@@ -35,8 +35,8 @@ function GestionPromociones({ productos, cargarProductos }) {
       : null;
 
     try {
-      // Método ajustado a patch para coincidir con la ruta del servidor
-      const respuesta = await axios.patch(`https://elo-joyeria-backend.vercel.app/api/productos/${productoSeleccionado.id_producto}/oferta`, {
+      // RESTAURADO AL MÉTODO ORIGINAL QUE TU BACKEND ESPERA
+      const respuesta = await axios.put(`https://elo-joyeria-backend.vercel.app/api/productos/${productoSeleccionado.id_producto}/oferta`, {
         precio_oferta: precioOfertaFinal,
         fecha_fin_oferta: fechaFormateada
       });
@@ -56,7 +56,6 @@ function GestionPromociones({ productos, cargarProductos }) {
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '30px' }}>
-      
       <div>
         <h3 style={estiloSubtitulo}>🎯 Seleccione un producto para aplicar oferta</h3>
         <input 
@@ -66,7 +65,6 @@ function GestionPromociones({ productos, cargarProductos }) {
           onChange={(e) => setBusqueda(e.target.value)}
           style={estiloInputBusqueda}
         />
-
         <div style={{ maxHeight: '400px', overflowY: 'auto', border: '1px solid #eee', borderRadius: '6px' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
             <thead>
@@ -98,19 +96,16 @@ function GestionPromociones({ productos, cargarProductos }) {
 
       <div style={{ backgroundColor: '#fdfdfd', border: '1px solid #e9e9e9', padding: '25px', borderRadius: '8px' }}>
         <h3 style={estiloSubtitulo}>🏷️ Calculadora de Rebajas</h3>
-        
         {productoSeleccionado ? (
           <form onSubmit={aplicarOferta}>
             <div style={{ marginBottom: '15px' }}>
               <p style={{ margin: '0 0 5px 0', fontSize: '0.85rem', color: '#666', textTransform: 'uppercase' }}>Producto Elegido</p>
               <strong style={{ fontSize: '1.1rem', color: '#1a1a1a' }}>{productoSeleccionado.nombre}</strong>
             </div>
-
             <div style={{ marginBottom: '20px' }}>
               <p style={{ margin: '0 0 5px 0', fontSize: '0.85rem', color: '#666', textTransform: 'uppercase' }}>Precio Actual</p>
               <strong style={{ fontSize: '1.2rem', color: '#c62828' }}>₡{Number(productoSeleccionado.precio).toLocaleString('es-CR')}</strong>
             </div>
-
             <div style={{ marginBottom: '25px' }}>
               <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase', color: '#555' }}>Porcentaje de Descuento</label>
               <select 
@@ -128,7 +123,6 @@ function GestionPromociones({ productos, cargarProductos }) {
                 <option value="50">50% de Descuento (Mitad de Precio)</option>
               </select>
             </div>
-
             {descuento > 0 && (
               <div style={{ marginBottom: '25px' }}>
                 <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase', color: '#555' }}>
@@ -142,26 +136,12 @@ function GestionPromociones({ productos, cargarProductos }) {
                 />
               </div>
             )}
-
-            {descuento > 0 && (
-              <div style={{ backgroundColor: '#e8f5e9', padding: '15px', borderRadius: '6px', marginBottom: '25px', border: '1px solid #c8e6c9' }}>
-                <p style={{ margin: '0 0 5px 0', fontSize: '0.8rem', color: '#2e7d32', fontWeight: '600', textTransform: 'uppercase' }}>Precio Final de Oferta</p>
-                <span style={{ fontSize: '1.4rem', fontWeight: '700', color: '#1b5e20' }}>
-                  ₡{calcularPrecioFinal(productoSeleccionado.precio, descuento).toLocaleString('es-CR')}
-                </span>
-                <p style={{ margin: '5px 0 0 0', fontSize: '0.75rem', color: '#4caf50' }}>Ahorro directo de: ₡{(Number(productoSeleccionado.precio) * (descuento / 100)).toLocaleString('es-CR')}</p>
-              </div>
-            )}
-
-            <button type="submit" style={estiloBotonOroGrande}>
-              ACTUALIZAR PRECIO OFICIAL
-            </button>
+            <button type="submit" style={estiloBotonOroGrande}>ACTUALIZAR PRECIO OFICIAL</button>
           </form>
         ) : (
-          <p style={{ color: '#888', textAlign: 'center', paddingTop: '40px', fontSize: '0.95rem' }}>Selecciona una joya de la lista de la izquierda para configurar su oferta.</p>
+          <p style={{ color: '#888', textAlign: 'center', paddingTop: '40px', fontSize: '0.95rem' }}>Selecciona una joya para configurar su oferta.</p>
         )}
       </div>
-
     </div>
   );
 }
