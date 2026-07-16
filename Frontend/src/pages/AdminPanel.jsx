@@ -246,13 +246,15 @@ function AdminPanel() {
       {mostrarModal && (
         <div style={estiloOverlayModal}>
           <div style={estiloCuerpoModal}>
-            <h3 style={{ margin: '0 0 20px 0' }}>{editandoId ? '✏️ Editar Producto' : '✨ Nuevo Producto'}</h3>
+            <h3 style={{ margin: '0 0 20px 0', fontSize: '1.2rem', textAlign: 'center' }}>{editandoId ? '✏️ Editar Producto' : '✨ Nuevo Producto'}</h3>
             <form onSubmit={guardarProducto}>
               <input type="text" placeholder="Nombre" value={formProducto.nombre} onChange={(e) => setFormProducto({...formProducto, nombre: e.target.value})} style={estiloInputForm} required />
               <input type="text" placeholder="URL Imagen" value={formProducto.imagen_url} onChange={(e) => setFormProducto({...formProducto, imagen_url: e.target.value})} style={estiloInputForm} />
-              <input type="number" placeholder="Precio" value={formProducto.precio} onChange={(e) => setFormProducto({...formProducto, precio: e.target.value})} style={estiloInputForm} required />
-              <input type="number" placeholder="Stock" value={formProducto.stock} onChange={(e) => setFormProducto({...formProducto, stock: e.target.value})} style={estiloInputForm} />
-              <textarea placeholder="Descripción" value={formProducto.descripcion} onChange={(e) => setFormProducto({...formProducto, descripcion: e.target.value})} style={{...estiloInputForm, height: '80px'}}></textarea>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <input type="number" placeholder="Precio" value={formProducto.precio} onChange={(e) => setFormProducto({...formProducto, precio: e.target.value})} style={estiloInputForm} required />
+                <input type="number" placeholder="Stock" value={formProducto.stock} onChange={(e) => setFormProducto({...formProducto, stock: e.target.value})} style={estiloInputForm} />
+              </div>
+              <textarea placeholder="Descripción" value={formProducto.descripcion} onChange={(e) => setFormProducto({...formProducto, descripcion: e.target.value})} style={{...estiloInputForm, height: '70px'}}></textarea>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <select value={formProducto.material_id} onChange={(e) => setFormProducto({...formProducto, material_id: e.target.value})} style={estiloInputForm}>
                   <option value="">Material</option>
@@ -263,8 +265,8 @@ function AdminPanel() {
                   {tipos.map(t => <option key={t.id_tipo} value={t.id_tipo}>{t.nombre}</option>)}
                 </select>
               </div>
-              <button type="submit" style={estiloBotonDescargaPRO}>Guardar</button>
-              <button type="button" onClick={() => setMostrarModal(false)} style={{ width: '100%', background: '#eee', border: 'none', padding: '10px', marginTop: '10px', cursor: 'pointer' }}>Cancelar</button>
+              <button type="submit" style={estiloBotonDescargaPRO}>Guardar Cambios</button>
+              <button type="button" onClick={() => setMostrarModal(false)} style={{ width: '100%', background: 'transparent', border: 'none', padding: '10px', marginTop: '5px', cursor: 'pointer', color: '#888', fontSize: '0.9rem' }}>Cancelar</button>
             </form>
           </div>
         </div>
@@ -281,13 +283,13 @@ const estiloBotonCerrar = { width: '100%', backgroundColor: '#333', color: '#ec5
 const estiloHeaderSeccion = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '35px', borderBottom: '1px solid #e0e0e0', paddingBottom: '15px' };
 const estiloBadge = { fontSize: '0.9rem', color: '#666', backgroundColor: '#fff', padding: '6px 15px', borderRadius: '20px', border: '1px solid #ddd' };
 const estiloContenedorBlanco = { backgroundColor: '#fff', borderRadius: '10px', padding: '30px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)', border: '1px solid #e6e6e6' };
-const estiloOverlayModal = { position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 };
-const estiloCuerpoModal = { backgroundColor: '#fff', width: '100%', maxWidth: '650px', padding: '30px', borderRadius: '8px' };
-const estiloInputForm = { width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ccc', borderRadius: '6px', boxSizing: 'border-box' };
+const estiloOverlayModal = { position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 };
+const estiloCuerpoModal = { backgroundColor: '#fff', width: '90%', maxWidth: '450px', padding: '25px', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' };
+const estiloInputForm = { width: '100%', padding: '12px', marginBottom: '12px', border: '1px solid #ddd', borderRadius: '6px', boxSizing: 'border-box', fontSize: '0.95rem' };
 const estiloBotonFiltro = { padding: '10px 20px', border: '1px solid #ccc', background: '#fff', color: '#555', borderRadius: '4px', cursor: 'pointer', fontSize: '0.88rem', fontWeight: '500' };
 const estiloBotonFiltroActivo = { ...estiloBotonFiltro, background: '#222', color: '#fff', borderColor: '#222' };
 const estiloInputFecha = { padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '0.9rem', color: '#333' };
-const estiloBotonDescargaPRO = { width: '100%', background: '#222', color: '#fff', border: 'none', padding: '14px', fontSize: '0.9rem', letterSpacing: '1px', fontWeight: '600', borderRadius: '4px', cursor: 'pointer' };
+const estiloBotonDescargaPRO = { width: '100%', background: '#222', color: '#fff', border: 'none', padding: '14px', fontSize: '0.95rem', fontWeight: '600', borderRadius: '6px', cursor: 'pointer', marginTop: '10px' };
 const estiloCeldaTh = { padding: '12px 15px', fontWeight: '500', fontSize: '0.85rem', textTransform: 'uppercase' };
 const estiloCeldaTd = { padding: '12px 15px', color: '#333' };
 

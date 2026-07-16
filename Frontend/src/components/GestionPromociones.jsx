@@ -5,18 +5,16 @@ function GestionPromociones({ productos, cargarProductos }) {
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [descuento, setDescuento] = useState(0);
   const [busqueda, setBusqueda] = useState('');
-  // 🕒 NUEVO DATO: Estado para capturar el tiempo límite de la rebaja
   const [fechaFin, setFechaFin] = useState('');
 
-  // Filtrar productos para la búsqueda rápida dentro de promociones
   const productosFiltrados = productos.filter(prod =>
     prod.nombre.toLowerCase().includes(busqueda.toLowerCase())
   );
 
   const seleccionarProducto = (producto) => {
     setProductoSeleccionado(producto);
-    setDescuento(0); // Reiniciar el contador de descuento para el nuevo producto
-    setFechaFin(''); // Limpiar la fecha vieja al cambiar de joya
+    setDescuento(0);
+    setFechaFin('');
   };
 
   const calcularPrecioFinal = (precio, pctDescuento) => {
@@ -28,27 +26,23 @@ function GestionPromociones({ productos, cargarProductos }) {
     e.preventDefault();
     if (!productoSeleccionado) return;
 
-    // Si el descuento es mayor a 0, se calcula el valor; de lo contrario, vuelve a NULL en MySQL
     const precioOfertaFinal = descuento > 0 
       ? calcularPrecioFinal(productoSeleccionado.precio, descuento) 
       : null;
 
-    // ✨ CAMBIO AQUÍ: Formatear la fecha para que MySQL no la rechace ni desfase
-    // Convierte "2026-06-24T15:30" en "2026-06-24 15:30:00"
     const fechaFormateada = descuento > 0 && fechaFin 
       ? fechaFin.replace('T', ' ') + ':00' 
       : null;
 
     try {
-      // ACTUALIZADO: Pasamos la fecha formateada de manera limpia al servidor sin envolturas de markdown
-      const respuesta = await axios.patch(`https://elo-joyeria-backend.vercel.app/api/productos/${productoSeleccionado.id_producto}/oferta`, {
+      // CORRECCIÓN: Volvemos a PUT para cumplir con los métodos permitidos por tu servidor
+      const respuesta = await axios.put(`https://elo-joyeria-backend.vercel.app/api/productos/${productoSeleccionado.id_producto}/oferta`, {
         precio_oferta: precioOfertaFinal,
         fecha_fin_oferta: fechaFormateada
       });
 
       alert(respuesta.data.mensaje || '¡Precio de oferta actualizado con éxito!');
       
-      // Limpiar estados y refrescar la lista global del panel
       setProductoSeleccionado(null);
       setDescuento(0);
       setFechaFin('');
@@ -63,7 +57,6 @@ function GestionPromociones({ productos, cargarProductos }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '30px' }}>
       
-      {/* COLUMNA IZQUIERDA: LISTA DE PRODUCTOS PARA SELECCIONAR */}
       <div>
         <h3 style={estiloSubtitulo}>🎯 Seleccione un producto para aplicar oferta</h3>
         <input 
@@ -103,7 +96,6 @@ function GestionPromociones({ productos, cargarProductos }) {
         </div>
       </div>
 
-      {/* COLUMNA DERECHA: CALCULADORA Y APLICACIÓN DE DESCUENTOS */}
       <div style={{ backgroundColor: '#fdfdfd', border: '1px solid #e9e9e9', padding: '25px', borderRadius: '8px' }}>
         <h3 style={estiloSubtitulo}>🏷️ Calculadora de Rebajas</h3>
         
@@ -137,7 +129,6 @@ function GestionPromociones({ productos, cargarProductos }) {
               </select>
             </div>
 
-            {/* 📅 NUEVO ELEMENTO FORMULARIO: Se muestra únicamente si se asigna un rebajo mayor a 0% */}
             {descuento > 0 && (
               <div style={{ marginBottom: '25px' }}>
                 <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase', color: '#555' }}>
