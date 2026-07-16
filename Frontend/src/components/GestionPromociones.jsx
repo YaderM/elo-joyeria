@@ -35,8 +35,8 @@ function GestionPromociones({ productos, cargarProductos }) {
       : null;
 
     try {
-      // CORRECCIÓN: Volvemos a PUT para cumplir con los métodos permitidos por tu servidor
-      const respuesta = await axios.put(`https://elo-joyeria-backend.vercel.app/api/productos/${productoSeleccionado.id_producto}/oferta`, {
+      // Método ajustado a patch para coincidir con la ruta del servidor
+      const respuesta = await axios.patch(`https://elo-joyeria-backend.vercel.app/api/productos/${productoSeleccionado.id_producto}/oferta`, {
         precio_oferta: precioOfertaFinal,
         fecha_fin_oferta: fechaFormateada
       });

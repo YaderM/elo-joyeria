@@ -14,9 +14,6 @@ function AdminPanel() {
   const [seccionActiva, setSeccionActiva] = useState('inventario');
   
   const API_URL = 'https://elo-joyeria-backend.vercel.app/api';
-  const getConfig = () => ({
-    headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
-  });
 
   const [productos, setProductos] = useState([]);
   const [materiales, setMateriales] = useState([]);
@@ -53,7 +50,7 @@ function AdminPanel() {
   const cargarProductos = async () => {
     try {
       setCargando(true);
-      const respuesta = await axios.get(`${API_URL}/productos`, getConfig());
+      const respuesta = await axios.get(`${API_URL}/productos`);
       setProductos(respuesta.data);
     } catch (error) {
       console.error("Error al traer productos:", error);
@@ -67,8 +64,8 @@ function AdminPanel() {
 
   const cargarAuxiliares = async () => {
     try {
-      const resMateriales = await axios.get(`${API_URL}/productos/aux/materiales`, getConfig());
-      const resTipos = await axios.get(`${API_URL}/productos/aux/tipos`, getConfig());
+      const resMateriales = await axios.get(`${API_URL}/productos/aux/materiales`);
+      const resTipos = await axios.get(`${API_URL}/productos/aux/tipos`);
       setMateriales(resMateriales.data);
       setTipos(resTipos.data);
     } catch (error) {
@@ -84,7 +81,6 @@ function AdminPanel() {
       try {
         const hoy = new Date().toISOString().split('T')[0];
         const respuesta = await axios.get(`${API_URL}/ventas/ventas_pendientes`, {
-            ...getConfig(),
             params: { desde: hoy, hasta: hoy }
         });
         setDatosReporte(respuesta.data);
@@ -104,7 +100,6 @@ function AdminPanel() {
     }
     try {
       const respuesta = await axios.get(`${API_URL}/ventas/ventas_pendientes`, {
-          ...getConfig(),
           params: { desde: fechaInicio, hasta: fechaFin }
       });
       setDatosReporte(respuesta.data);
@@ -148,10 +143,10 @@ function AdminPanel() {
       };
 
       if (editandoId) {
-        await axios.put(`${API_URL}/productos/${editandoId}`, datosAEnviar, getConfig());
+        await axios.put(`${API_URL}/productos/${editandoId}`, datosAEnviar);
         alert('¡Joya actualizada con éxito!');
       } else {
-        await axios.post(`${API_URL}/productos`, datosAEnviar, getConfig());
+        await axios.post(`${API_URL}/productos`, datosAEnviar);
         alert('¡Producto agregado con éxito!');
       }
       setMostrarModal(false);
@@ -165,7 +160,7 @@ function AdminPanel() {
   const manejarEliminar = async (id, nombre) => {
     if (window.confirm(`¿Estás seguro de eliminar "${nombre}"?`)) {
       try {
-        await axios.delete(`${API_URL}/productos/${id}`, getConfig());
+        await axios.delete(`${API_URL}/productos/${id}`);
         alert('Producto eliminado.');
         cargarProductos();
       } catch (error) {
