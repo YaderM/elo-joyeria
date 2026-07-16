@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-// Componentes modulares
+// Componentes modulares que ya tenías integrados
 import GestionInventario from '../components/GestionInventario';
 import GestionCategorias from '../components/GestionCategorias';
 import GestionPromociones from '../components/GestionPromociones'; 
@@ -15,16 +15,19 @@ function AdminPanel() {
   
   const API_URL = 'https://elo-joyeria-backend.vercel.app/api';
 
+  // Estados originales de datos
   const [productos, setProductos] = useState([]);
   const [materiales, setMateriales] = useState([]);
   const [tipos, setTipos] = useState([]);
   const [cargando, setCargando] = useState(true);
 
+  // Estados de Reportes
   const [seccionActivaReporte, setSeccionActivaReporte] = useState('inventario');
   const [datosReporte, setDatosReporte] = useState([]);
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
 
+  // Estados del Modal
   const [mostrarModal, setMostrarModal] = useState(false);
   const [editandoId, setEditandoId] = useState(null);
   const [formProducto, setFormProducto] = useState({
@@ -270,6 +273,7 @@ function AdminPanel() {
   );
 }
 
+// Estilos Constantes
 const estiloSidebar = { width: '260px', backgroundColor: '#1a1a1a', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '30px 0' };
 const estiloBrand = { padding: '0 25px 25px 25px', borderBottom: '1px solid #333', textAlign: 'center' };
 const estiloBotonSidebar = { width: '100%', textAlign: 'left', padding: '14px 25px', background: 'none', border: 'none', color: '#aaa', fontSize: '0.95rem', cursor: 'pointer', display: 'block' };
