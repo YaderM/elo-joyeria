@@ -21,7 +21,7 @@ router.post('/', productoController.crearProducto);
 router.put('/:id', productoController.actualizarProducto);
 router.delete('/:id', productoController.eliminarProducto);
 router.post('/aux/materiales', productoController.crearMaterial);
-router.patch('/:id/oferta', productoController.actualizarOferta);
+router.put('/:id/oferta', productoController.actualizarOferta);
 
 // 🔍 RUTA DINÁMICA (SIEMPRE AL FINAL)
 router.get('/:id', productoController.obtenerProductoPorId);
