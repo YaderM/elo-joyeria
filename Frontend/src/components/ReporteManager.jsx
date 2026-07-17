@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx';
 import { Page, Text, View, Document, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer';
 import ReporteProductosPDF from './ReporteProductosPDF';
 
-// 🎨 Estilos para el PDF
+// 🎨 Estilos para el PDF (Sin cambios)
 const styles = StyleSheet.create({
   page: { padding: 40, backgroundColor: '#ffffff', fontFamily: 'Helvetica' },
   header: { marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#b59410', paddingBottom: 10 },
@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
   textBody: { fontSize: 8, paddingLeft: 5 }
 });
 
-// 📄 PDF Detallado para Productos
+// 📄 PDF Detallado para Productos (Sin cambios)
 function ReporteProductosCompletoPDF({ productos }) {
   return (
     <Document>
@@ -44,7 +44,7 @@ function ReporteProductosCompletoPDF({ productos }) {
   );
 }
 
-// 📄 PDF Molde para Ventas
+// 📄 PDF Molde para Ventas (Sin cambios)
 function ReporteVentasPDF({ data, titulo }) {
   return (
     <Document>
@@ -97,7 +97,7 @@ export default function ReporteManager({
   const esProductos = seccionActivaReporte === 'productos';
   const esInventario = seccionActivaReporte === 'inventario';
   
-  // Normalización de datos para asegurar consistencia
+  // Normalización de datos
   const datosNormalizados = useMemo(() => {
     return (datosReporte || []).map(item => ({
       ...item,
@@ -122,7 +122,8 @@ export default function ReporteManager({
     XLSX.writeFile(wb, `Reporte_Elo_${seccionActivaReporte}.xlsx`);
   };
 
-  const hayDatos = datosFiltrados && datosFiltrados.length > 0;
+  // AJUSTE: Se considera que hay datos SOLO SI existen datos en la fuente y no están "vacíos" por defecto.
+  const hayDatos = datosFiltrados && datosFiltrados.length > 0 && datosFiltrados[0].fecha_creacion !== 'N/A';
 
   return (
     <div style={{ marginTop: '20px' }}>
@@ -162,7 +163,7 @@ export default function ReporteManager({
         )}
       </div>
 
-      {/* Tabla condicional */}
+      {/* Tabla condicional: Solo se renderiza si hay datos reales */}
       {hayDatos ? (
         <div style={{ overflowX: 'auto', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#fff' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
@@ -224,7 +225,7 @@ export default function ReporteManager({
           </table>
         </div>
       ) : (
-        <div style={{ padding: '20px', textAlign: 'center', color: '#888' }}>
+        <div style={{ padding: '20px', textAlign: 'center', color: '#888', border: '1px dashed #ccc', borderRadius: '8px' }}>
           Esperando resultados de la consulta...
         </div>
       )}
