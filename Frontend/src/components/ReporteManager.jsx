@@ -122,8 +122,10 @@ export default function ReporteManager({
     XLSX.writeFile(wb, `Reporte_Elo_${seccionActivaReporte}.xlsx`);
   };
 
-  if (!datosFiltrados || datosFiltrados.length === 0) {
-    return <div style={{ padding: '20px', color: '#777' }}>No hay resultados disponibles.</div>;
+  // AQUÍ ESTÁ EL CAMBIO: Si no hay datos, no mostramos nada.
+  // La tabla solo aparece si 'datosReporte' existe y tiene elementos.
+  if (!datosReporte || datosReporte.length === 0) {
+    return null; 
   }
 
   return (
