@@ -122,8 +122,9 @@ export default function ReporteManager({
     XLSX.writeFile(wb, `Reporte_Elo_${seccionActivaReporte}.xlsx`);
   };
 
-  // AJUSTE: Se considera que hay datos si el array contiene elementos.
-  const hayDatos = datosFiltrados && datosFiltrados.length > 0;
+  // AJUSTE: Validamos que haya datos reales, ocultando la tabla si son los datos de relleno "N/A"
+  const hayDatosReales = datosFiltrados && datosFiltrados.length > 0 && 
+    (esVentas ? datosFiltrados[0].fecha_creacion !== 'N/A' : true);
 
   return (
     <div style={{ marginTop: '20px' }}>
@@ -141,7 +142,7 @@ export default function ReporteManager({
         )}
 
         {/* Botones de descarga condicionales */}
-        {hayDatos && (
+        {hayDatosReales && (
           <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
             <button onClick={exportarExcel} style={{ ...estiloBotonDescargaPRO, backgroundColor: '#1d6f42', width: 'auto', padding: '10px 25px' }}>Excel 📗</button>
             <PDFDownloadLink 
@@ -164,7 +165,7 @@ export default function ReporteManager({
       </div>
 
       {/* Tabla condicional: Solo se renderiza si hay datos reales */}
-      {hayDatos ? (
+      {hayDatosReales ? (
         <div style={{ overflowX: 'auto', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#fff' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
             <thead>
