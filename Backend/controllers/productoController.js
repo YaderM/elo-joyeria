@@ -268,6 +268,20 @@ exports.iniciarVentaPendiente = async (req, res) => {
     }
 };
 // ... (al final de tu archivo, añade esto antes de cerrar las exportaciones)
+// 15. Crear Tipo
+exports.crearTipo = async (req, res) => {
+    try {
+        const { nombre } = req.body;
+        if (!nombre) {
+            return res.status(400).json({ error: 'El nombre del tipo es obligatorio' });
+        }
+        const [result] = await db.query('INSERT INTO tipos_producto (nombre) VALUES (?)', [nombre]);
+        res.status(201).json({ mensaje: '¡Nuevo tipo registrado!', id_tipo: result.insertId });
+    } catch (error) {
+        console.error('Error al crear tipo:', error.message);
+        res.status(500).json({ error: 'Error al insertar en la base de datos' });
+    }
+};
 
 // 15. Prueba de conexión a la base de datos
 exports.testDb = async (req, res) => {
