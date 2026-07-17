@@ -122,8 +122,8 @@ export default function ReporteManager({
     XLSX.writeFile(wb, `Reporte_Elo_${seccionActivaReporte}.xlsx`);
   };
 
-  // AJUSTE: Se considera que hay datos SOLO SI existen datos en la fuente y no están "vacíos" por defecto.
-  const hayDatos = datosFiltrados && datosFiltrados.length > 0 && datosFiltrados[0].fecha_creacion !== 'N/A';
+  // AJUSTE: Se considera que hay datos si el array contiene elementos.
+  const hayDatos = datosFiltrados && datosFiltrados.length > 0;
 
   return (
     <div style={{ marginTop: '20px' }}>
