@@ -19,43 +19,51 @@ function GestionPromociones({ productos, cargarProductos }) {
 
   const calcularPrecioFinal = (precio, pctDescuento) => {
     const precioNum = Number(precio);
-    return precioNum - (precioNum * (pctDescuento / 100));
+    return precioNum - (precioNum * (Number(pctDescuento) / 100));
   };
 
   const aplicarOferta = async (e) => {
     e.preventDefault();
     if (!productoSeleccionado) return;
 
-    const precioOfertaFinal = descuento > 0 
-      ? calcularPrecioFinal(productoSeleccionado.precio, descuento) 
+    const descNum = Number(descuento);
+    const precioOfertaFinal = descNum > 0 
+      ? calcularPrecioFinal(productoSeleccionado.precio, descNum) 
       : null;
 
-    const fechaFormateada = descuento > 0 && fechaFin 
+    // Formateo de fecha: T a espacio y segundos
+    const fechaFormateada = (descNum > 0 && fechaFin) 
       ? fechaFin.replace('T', ' ') + ':00' 
       : null;
 
     try {
-      // RESTAURADO AL MÉTODO ORIGINAL QUE TU BACKEND ESPERA
-      const respuesta = await axios.put(`https://elo-joyeria-backend.vercel.app/api/productos/${productoSeleccionado.id_producto}/oferta`, {
+      // Petición al backend
+      const respuesta = await axios.patch(`https://elo-joyeria-backend.vercel.app/api/productos/${productoSeleccionado.id_producto}/oferta`, {
         precio_oferta: precioOfertaFinal,
         fecha_fin_oferta: fechaFormateada
       });
 
       alert(respuesta.data.mensaje || '¡Precio de oferta actualizado con éxito!');
       
+      // Limpiar y refrescar la lista global
       setProductoSeleccionado(null);
       setDescuento(0);
       setFechaFin('');
-      cargarProductos();
+      
+      // Este es el punto crítico: refrescar el estado global del AdminPanel
+      if (typeof cargarProductos === 'function') {
+        cargarProductos();
+      }
       
     } catch (error) {
       console.error("Error al aplicar la promoción:", error);
-      alert('Hubo un error de conexión al intentar guardar la oferta en el servidor.');
+      alert('Error al guardar la oferta. Verifica tu conexión.');
     }
   };
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '30px' }}>
+      
       <div>
         <h3 style={estiloSubtitulo}>🎯 Seleccione un producto para aplicar oferta</h3>
         <input 
@@ -65,6 +73,7 @@ function GestionPromociones({ productos, cargarProductos }) {
           onChange={(e) => setBusqueda(e.target.value)}
           style={estiloInputBusqueda}
         />
+
         <div style={{ maxHeight: '400px', overflowY: 'auto', border: '1px solid #eee', borderRadius: '6px' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
             <thead>
@@ -96,16 +105,19 @@ function GestionPromociones({ productos, cargarProductos }) {
 
       <div style={{ backgroundColor: '#fdfdfd', border: '1px solid #e9e9e9', padding: '25px', borderRadius: '8px' }}>
         <h3 style={estiloSubtitulo}>🏷️ Calculadora de Rebajas</h3>
+        
         {productoSeleccionado ? (
           <form onSubmit={aplicarOferta}>
             <div style={{ marginBottom: '15px' }}>
               <p style={{ margin: '0 0 5px 0', fontSize: '0.85rem', color: '#666', textTransform: 'uppercase' }}>Producto Elegido</p>
               <strong style={{ fontSize: '1.1rem', color: '#1a1a1a' }}>{productoSeleccionado.nombre}</strong>
             </div>
+
             <div style={{ marginBottom: '20px' }}>
               <p style={{ margin: '0 0 5px 0', fontSize: '0.85rem', color: '#666', textTransform: 'uppercase' }}>Precio Actual</p>
               <strong style={{ fontSize: '1.2rem', color: '#c62828' }}>₡{Number(productoSeleccionado.precio).toLocaleString('es-CR')}</strong>
             </div>
+
             <div style={{ marginBottom: '25px' }}>
               <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase', color: '#555' }}>Porcentaje de Descuento</label>
               <select 
@@ -113,21 +125,20 @@ function GestionPromociones({ productos, cargarProductos }) {
                 onChange={(e) => setDescuento(Number(e.target.value))} 
                 style={estiloSelectForm}
               >
-                <option value="0">0% (Sin Descuento / Precio Normal)</option>
-                <option value="5">5% de Descuento</option>
-                <option value="10">10% de Descuento</option>
-                <option value="15">15% de Descuento</option>
-                <option value="20">20% de Descuento</option>
-                <option value="25">25% de Descuento</option>
-                <option value="30">30% de Descuento</option>
-                <option value="50">50% de Descuento (Mitad de Precio)</option>
+                <option value="0">0% (Sin Descuento)</option>
+                <option value="5">5%</option>
+                <option value="10">10%</option>
+                <option value="15">15%</option>
+                <option value="20">20%</option>
+                <option value="25">25%</option>
+                <option value="30">30%</option>
+                <option value="50">50%</option>
               </select>
             </div>
+
             {descuento > 0 && (
               <div style={{ marginBottom: '25px' }}>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase', color: '#555' }}>
-                  📅 ¿Cuándo termina la oferta? (Opcional)
-                </label>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase', color: '#555' }}>📅 ¿Cuándo termina la oferta?</label>
                 <input 
                   type="datetime-local" 
                   value={fechaFin}
@@ -136,6 +147,16 @@ function GestionPromociones({ productos, cargarProductos }) {
                 />
               </div>
             )}
+
+            {descuento > 0 && (
+              <div style={{ backgroundColor: '#e8f5e9', padding: '15px', borderRadius: '6px', marginBottom: '25px', border: '1px solid #c8e6c9' }}>
+                <p style={{ margin: '0 0 5px 0', fontSize: '0.8rem', color: '#2e7d32', fontWeight: '600', textTransform: 'uppercase' }}>Precio Final de Oferta</p>
+                <span style={{ fontSize: '1.4rem', fontWeight: '700', color: '#1b5e20' }}>
+                  ₡{calcularPrecioFinal(productoSeleccionado.precio, descuento).toLocaleString('es-CR')}
+                </span>
+              </div>
+            )}
+
             <button type="submit" style={estiloBotonOroGrande}>ACTUALIZAR PRECIO OFICIAL</button>
           </form>
         ) : (
@@ -150,6 +171,6 @@ const estiloSubtitulo = { fontWeight: '400', color: '#b59410', borderBottom: '1p
 const estiloInputBusqueda = { padding: '10px 15px', width: '100%', borderRadius: '6px', border: '1px solid #ccc', fontSize: '0.95rem', boxSizing: 'border-box', marginBottom: '15px' };
 const estiloBotonAccion = { border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '500', transition: 'all 0.2s' };
 const estiloSelectForm = { width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '0.9rem', outline: 'none', backgroundColor: '#fff' };
-const estiloBotonOroGrande = { width: '100%', backgroundColor: '#b59410', color: '#fff', border: 'none', padding: '12px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem', letterSpacing: '0.5px' };
+const estiloBotonOroGrande = { width: '100%', backgroundColor: '#b59410', color: '#fff', border: 'none', padding: '12px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem' };
 
 export default GestionPromociones;
