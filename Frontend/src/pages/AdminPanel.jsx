@@ -85,18 +85,6 @@ function AdminPanel() {
     setSeccionActivaReporte(tipo);
     if (tipo === 'inventario' || tipo === 'productos') {
       setDatosReporte(productos);
-    } else if (tipo === 'dia') {
-      try {
-        const hoy = new Date().toISOString().split('T')[0];
-        const respuesta = await axios.get(`${API_URL}/ventas/ventas_pendientes`, {
-          params: { desde: hoy, hasta: hoy },
-          ...getConfig()
-        });
-        setDatosReporte(respuesta.data);
-      } catch (error) {
-        console.error("Error al obtener ventas de hoy:", error);
-        setDatosReporte([]);
-      }
     } else {
       setDatosReporte([]);
     }
@@ -229,7 +217,6 @@ function AdminPanel() {
               <div style={{ display: 'flex', gap: '15px', marginBottom: '30px' }}>
                 <button onClick={() => manejarCambioTipoReporte('inventario')} style={seccionActivaReporte === 'inventario' ? estiloBotonFiltroActivo : estiloBotonFiltro}>📋 Inventario</button>
                 <button onClick={() => manejarCambioTipoReporte('productos')} style={seccionActivaReporte === 'productos' ? estiloBotonFiltroActivo : estiloBotonFiltro}>🛍️ Reporte Productos</button>
-                <button onClick={() => manejarCambioTipoReporte('dia')} style={seccionActivaReporte === 'dia' ? estiloBotonFiltroActivo : estiloBotonFiltro}>📈 Ventas de Hoy</button>
                 <button onClick={() => setSeccionActivaReporte('rango')} style={seccionActivaReporte === 'rango' ? estiloBotonFiltroActivo : estiloBotonFiltro}>🗓️ Rango de Fechas</button>
               </div>
               {seccionActivaReporte === 'rango' && (
@@ -251,27 +238,49 @@ function AdminPanel() {
       {mostrarModal && (
         <div style={estiloOverlayModal}>
           <div style={estiloCuerpoModal}>
-            <h3 style={{ margin: '0 0 20px 0', fontSize: '1.2rem', textAlign: 'center' }}>{editandoId ? '✏️ Editar Producto' : '✨ Nuevo Producto'}</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#d4af37' }}>✨ {editandoId ? 'EDITAR JOYA' : 'REGISTRAR NUEVA JOYA'}</h3>
+              <button onClick={() => setMostrarModal(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.2rem' }}>×</button>
+            </div>
             <form onSubmit={guardarProducto}>
-              <input type="text" placeholder="Nombre" value={formProducto.nombre} onChange={(e) => setFormProducto({...formProducto, nombre: e.target.value})} style={estiloInputForm} required />
-              <input type="text" placeholder="URL Imagen" value={formProducto.imagen_url} onChange={(e) => setFormProducto({...formProducto, imagen_url: e.target.value})} style={estiloInputForm} />
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <input type="number" placeholder="Precio" value={formProducto.precio} onChange={(e) => setFormProducto({...formProducto, precio: e.target.value})} style={estiloInputForm} required />
-                <input type="number" placeholder="Stock" value={formProducto.stock} onChange={(e) => setFormProducto({...formProducto, stock: e.target.value})} style={estiloInputForm} />
+              <div style={{ display: 'flex', gap: '15px' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem' }}>Nombre de la Joya</label>
+                  <input type="text" value={formProducto.nombre} onChange={(e) => setFormProducto({...formProducto, nombre: e.target.value})} style={estiloInputForm} required />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem' }}>Precio (CRC)</label>
+                  <input type="number" value={formProducto.precio} onChange={(e) => setFormProducto({...formProducto, precio: e.target.value})} style={estiloInputForm} required />
+                </div>
               </div>
-              <textarea placeholder="Descripción" value={formProducto.descripcion} onChange={(e) => setFormProducto({...formProducto, descripcion: e.target.value})} style={{...estiloInputForm, height: '70px'}}></textarea>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <select value={formProducto.material_id} onChange={(e) => setFormProducto({...formProducto, material_id: e.target.value})} style={estiloInputForm}>
-                  <option value="">Material</option>
-                  {materiales.map(m => <option key={m.id_material} value={m.id_material}>{m.nombre}</option>)}
-                </select>
-                <select value={formProducto.tipo_id} onChange={(e) => setFormProducto({...formProducto, tipo_id: e.target.value})} style={estiloInputForm}>
-                  <option value="">Tipo</option>
-                  {tipos.map(t => <option key={t.id_tipo} value={t.id_tipo}>{t.nombre}</option>)}
-                </select>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem' }}>URL de la Imagen</label>
+              <input type="text" value={formProducto.imagen_url} onChange={(e) => setFormProducto({...formProducto, imagen_url: e.target.value})} style={estiloInputForm} />
+              <div style={{ display: 'flex', gap: '15px' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem' }}>Material</label>
+                  <select value={formProducto.material_id} onChange={(e) => setFormProducto({...formProducto, material_id: e.target.value})} style={estiloInputForm}>
+                    <option value="">-- Seleccione --</option>
+                    {materiales.map(m => <option key={m.id_material} value={m.id_material}>{m.nombre}</option>)}
+                  </select>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem' }}>Tipo de Joya</label>
+                  <select value={formProducto.tipo_id} onChange={(e) => setFormProducto({...formProducto, tipo_id: e.target.value})} style={estiloInputForm}>
+                    <option value="">-- Seleccione --</option>
+                    {tipos.map(t => <option key={t.id_tipo} value={t.id_tipo}>{t.nombre}</option>)}
+                  </select>
+                </div>
+                <div style={{ flex: 0.5 }}>
+                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem' }}>Stock</label>
+                  <input type="number" value={formProducto.stock} onChange={(e) => setFormProducto({...formProducto, stock: e.target.value})} style={estiloInputForm} />
+                </div>
               </div>
-              <button type="submit" style={estiloBotonDescargaPRO}>Guardar Cambios</button>
-              <button type="button" onClick={() => setMostrarModal(false)} style={{ width: '100%', background: 'transparent', border: 'none', padding: '10px', marginTop: '5px', cursor: 'pointer', color: '#888', fontSize: '0.9rem' }}>Cancelar</button>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem' }}>Descripción</label>
+              <textarea value={formProducto.descripcion} onChange={(e) => setFormProducto({...formProducto, descripcion: e.target.value})} style={{...estiloInputForm, height: '80px'}}></textarea>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+                <button type="button" onClick={() => setMostrarModal(false)} style={{ padding: '10px 20px', border: '1px solid #ccc', borderRadius: '4px', background: '#fff', cursor: 'pointer' }}>Cancelar</button>
+                <button type="submit" style={{ padding: '10px 30px', background: '#b59410', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Guardar</button>
+              </div>
             </form>
           </div>
         </div>
@@ -290,7 +299,7 @@ const estiloHeaderSeccion = { display: 'flex', justifyContent: 'space-between', 
 const estiloBadge = { fontSize: '0.9rem', color: '#666', backgroundColor: '#fff', padding: '6px 15px', borderRadius: '20px', border: '1px solid #ddd' };
 const estiloContenedorBlanco = { backgroundColor: '#fff', borderRadius: '10px', padding: '30px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)', border: '1px solid #e6e6e6' };
 const estiloOverlayModal = { position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 };
-const estiloCuerpoModal = { backgroundColor: '#fff', width: '90%', maxWidth: '450px', padding: '25px', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' };
+const estiloCuerpoModal = { backgroundColor: '#fff', width: '90%', maxWidth: '600px', padding: '30px', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' };
 const estiloInputForm = { width: '100%', padding: '12px', marginBottom: '12px', border: '1px solid #ddd', borderRadius: '6px', boxSizing: 'border-box', fontSize: '0.95rem' };
 const estiloBotonFiltro = { padding: '10px 20px', border: '1px solid #ccc', background: '#fff', color: '#555', borderRadius: '4px', cursor: 'pointer', fontSize: '0.88rem', fontWeight: '500' };
 const estiloBotonFiltroActivo = { ...estiloBotonFiltro, background: '#222', color: '#fff', borderColor: '#222' };
