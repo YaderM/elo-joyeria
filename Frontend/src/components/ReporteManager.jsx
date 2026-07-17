@@ -122,103 +122,112 @@ export default function ReporteManager({
     XLSX.writeFile(wb, `Reporte_Elo_${seccionActivaReporte}.xlsx`);
   };
 
-  // AQUÍ ESTÁ EL CAMBIO: Si no hay datos, no mostramos nada.
-  // La tabla solo aparece si 'datosReporte' existe y tiene elementos.
-  if (!datosReporte || datosReporte.length === 0) {
-    return null; 
-  }
+  const hayDatos = datosFiltrados && datosFiltrados.length > 0;
 
   return (
     <div style={{ marginTop: '20px' }}>
-      {esVentas && (
-        <div style={{ marginBottom: '15px', padding: '10px', background: '#f9f9f9', borderRadius: '5px' }}>
-           <label style={{ marginRight: '10px' }}>Filtrar Estado:</label>
-           <select onChange={(e) => setFiltroEstado(e.target.value)} value={filtroEstado}>
-             <option value="TODAS">Todas</option>
-             <option value="CONFIRMADA">Confirmadas</option>
-             <option value="PENDIENTE">Pendientes</option>
-           </select>
+      {/* Sección de Filtros siempre visible */}
+      <div style={{ marginBottom: '15px' }}>
+        {esVentas && (
+          <div style={{ marginBottom: '10px', padding: '10px', background: '#f9f9f9', borderRadius: '5px' }}>
+             <label style={{ marginRight: '10px' }}>Filtrar Estado:</label>
+             <select onChange={(e) => setFiltroEstado(e.target.value)} value={filtroEstado}>
+               <option value="TODAS">Todas</option>
+               <option value="CONFIRMADA">Confirmadas</option>
+               <option value="PENDIENTE">Pendientes</option>
+             </select>
+          </div>
+        )}
+
+        {/* Botones de descarga condicionales */}
+        {hayDatos && (
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+            <button onClick={exportarExcel} style={{ ...estiloBotonDescargaPRO, backgroundColor: '#1d6f42', width: 'auto', padding: '10px 25px' }}>Excel 📗</button>
+            <PDFDownloadLink 
+              document={
+                esProductos 
+                ? <ReporteProductosCompletoPDF productos={datosFiltrados} /> 
+                : esInventario 
+                  ? <ReporteProductosPDF productos={datosFiltrados} /> 
+                  : <ReporteVentasPDF data={datosFiltrados} titulo={`Reporte de ${seccionActivaReporte}`} />
+              } 
+              fileName={`Reporte_Elo_${seccionActivaReporte}.pdf`}
+              style={{ textDecoration: 'none' }}
+            >
+              {({ loading }) => (
+                <button style={{ ...estiloBotonDescargaPRO, width: 'auto', padding: '10px 25px' }}>{loading ? 'Preparando...' : 'PDF 📕'}</button>
+              )}
+            </PDFDownloadLink>
+          </div>
+        )}
+      </div>
+
+      {/* Tabla condicional */}
+      {hayDatos ? (
+        <div style={{ overflowX: 'auto', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#fff' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+            <thead>
+              <tr style={{ backgroundColor: '#1a1a1a', color: '#fff' }}>
+                <th style={estiloCeldaTh}>{esVentas ? 'Fecha' : esInventario ? 'Nombre' : 'ID'}</th>
+                <th style={estiloCeldaTh}>{esVentas ? 'Cliente' : esInventario ? 'Stock' : 'Código'}</th>
+                <th style={estiloCeldaTh}>{esVentas ? 'Productos' : esInventario ? 'Precio' : 'Nombre'}</th>
+                {esProductos ? (
+                  <>
+                    <th style={estiloCeldaTh}>Descripción</th>
+                    <th style={estiloCeldaTh}>Precio</th>
+                    <th style={estiloCeldaTh}>Stock</th>
+                    <th style={estiloCeldaTh}>Material</th>
+                    <th style={estiloCeldaTh}>Tipo</th>
+                  </>
+                ) : esVentas ? (
+                  <>
+                    <th style={estiloCeldaTh}>Estado</th>
+                    <th style={estiloCeldaTh}>Total</th>
+                  </>
+                ) : null}
+              </tr>
+            </thead>
+            <tbody>
+              {datosFiltrados.map((item, i) => (
+                <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
+                  {esVentas ? (
+                    <>
+                      <td style={estiloCeldaTd}>{typeof item.fecha_creacion === 'string' ? item.fecha_creacion.substring(0, 10) : item.fecha_creacion}</td>
+                      <td style={estiloCeldaTd}>{item.nombre_cliente}</td>
+                      <td style={estiloCeldaTd}>{parsearProductosSeguro(item.detalle_productos)}</td>
+                      <td style={estiloCeldaTd}>
+                        <span style={{ padding: '2px 6px', borderRadius: '4px', background: item.estado === 'CONFIRMADA' ? '#e8f5e9' : '#fff3e0' }}>{item.estado}</span>
+                      </td>
+                      <td style={estiloCeldaTd}>₡{Number(item.monto_total || 0).toLocaleString()}</td>
+                    </>
+                  ) : esInventario ? (
+                    <>
+                      <td style={estiloCeldaTd}>{item.nombre}</td>
+                      <td style={estiloCeldaTd}>{item.stock || 0}</td>
+                      <td style={estiloCeldaTd}>₡{Number(item.precio || 0).toLocaleString()}</td>
+                    </>
+                  ) : (
+                    <>
+                      <td style={estiloCeldaTd}>{item.id_producto}</td>
+                      <td style={estiloCeldaTd}>{item.codigo}</td>
+                      <td style={estiloCeldaTd}>{item.nombre}</td>
+                      <td style={estiloCeldaTd}>{item.descripcion || 'N/A'}</td>
+                      <td style={estiloCeldaTd}>₡{Number(item.precio || 0).toLocaleString()}</td>
+                      <td style={estiloCeldaTd}>{item.stock || 0} u.</td>
+                      <td style={estiloCeldaTd}>{item.material || 'N/A'}</td>
+                      <td style={estiloCeldaTd}>{item.tipo_producto || 'N/A'}</td>
+                    </>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div style={{ padding: '20px', textAlign: 'center', color: '#888' }}>
+          Esperando resultados de la consulta...
         </div>
       )}
-
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-        <button onClick={exportarExcel} style={{ ...estiloBotonDescargaPRO, backgroundColor: '#1d6f42', width: 'auto', padding: '10px 25px' }}>Excel 📗</button>
-        <PDFDownloadLink 
-          document={
-            esProductos 
-            ? <ReporteProductosCompletoPDF productos={datosFiltrados} /> 
-            : esInventario 
-              ? <ReporteProductosPDF productos={datosFiltrados} /> 
-              : <ReporteVentasPDF data={datosFiltrados} titulo={`Reporte de ${seccionActivaReporte}`} />
-          } 
-          fileName={`Reporte_Elo_${seccionActivaReporte}.pdf`}
-          style={{ textDecoration: 'none' }}
-        >
-          {({ loading }) => (
-            <button style={{ ...estiloBotonDescargaPRO, width: 'auto', padding: '10px 25px' }}>{loading ? 'Preparando...' : 'PDF 📕'}</button>
-          )}
-        </PDFDownloadLink>
-      </div>
-
-      <div style={{ overflowX: 'auto', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#fff' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
-          <thead>
-            <tr style={{ backgroundColor: '#1a1a1a', color: '#fff' }}>
-              <th style={estiloCeldaTh}>{esVentas ? 'Fecha' : esInventario ? 'Nombre' : 'ID'}</th>
-              <th style={estiloCeldaTh}>{esVentas ? 'Cliente' : esInventario ? 'Stock' : 'Código'}</th>
-              <th style={estiloCeldaTh}>{esVentas ? 'Productos' : esInventario ? 'Precio' : 'Nombre'}</th>
-              {esProductos ? (
-                <>
-                  <th style={estiloCeldaTh}>Descripción</th>
-                  <th style={estiloCeldaTh}>Precio</th>
-                  <th style={estiloCeldaTh}>Stock</th>
-                  <th style={estiloCeldaTh}>Material</th>
-                  <th style={estiloCeldaTh}>Tipo</th>
-                </>
-              ) : esVentas ? (
-                <>
-                  <th style={estiloCeldaTh}>Estado</th>
-                  <th style={estiloCeldaTh}>Total</th>
-                </>
-              ) : null}
-            </tr>
-          </thead>
-          <tbody>
-            {datosFiltrados.map((item, i) => (
-              <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
-                {esVentas ? (
-                  <>
-                    <td style={estiloCeldaTd}>{typeof item.fecha_creacion === 'string' ? item.fecha_creacion.substring(0, 10) : item.fecha_creacion}</td>
-                    <td style={estiloCeldaTd}>{item.nombre_cliente}</td>
-                    <td style={estiloCeldaTd}>{parsearProductosSeguro(item.detalle_productos)}</td>
-                    <td style={estiloCeldaTd}>
-                      <span style={{ padding: '2px 6px', borderRadius: '4px', background: item.estado === 'CONFIRMADA' ? '#e8f5e9' : '#fff3e0' }}>{item.estado}</span>
-                    </td>
-                    <td style={estiloCeldaTd}>₡{Number(item.monto_total || 0).toLocaleString()}</td>
-                  </>
-                ) : esInventario ? (
-                  <>
-                    <td style={estiloCeldaTd}>{item.nombre}</td>
-                    <td style={estiloCeldaTd}>{item.stock || 0}</td>
-                    <td style={estiloCeldaTd}>₡{Number(item.precio || 0).toLocaleString()}</td>
-                  </>
-                ) : (
-                  <>
-                    <td style={estiloCeldaTd}>{item.id_producto}</td>
-                    <td style={estiloCeldaTd}>{item.codigo}</td>
-                    <td style={estiloCeldaTd}>{item.nombre}</td>
-                    <td style={estiloCeldaTd}>{item.descripcion || 'N/A'}</td>
-                    <td style={estiloCeldaTd}>₡{Number(item.precio || 0).toLocaleString()}</td>
-                    <td style={estiloCeldaTd}>{item.stock || 0} u.</td>
-                    <td style={estiloCeldaTd}>{item.material || 'N/A'}</td>
-                    <td style={estiloCeldaTd}>{item.tipo_producto || 'N/A'}</td>
-                  </>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
     </div>
   );
 }
