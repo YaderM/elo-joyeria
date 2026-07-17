@@ -38,7 +38,7 @@ function GestionPromociones({ productos, cargarProductos }) {
 
     try {
       // Petición al backend
-      const respuesta = await axios.patch(`https://elo-joyeria-backend.vercel.app/api/productos/${productoSeleccionado.id_producto}/oferta`, {
+      const respuesta = await axios.put(`https://elo-joyeria-backend.vercel.app/api/productos/${productoSeleccionado.id_producto}/oferta`, {
         precio_oferta: precioOfertaFinal,
         fecha_fin_oferta: fechaFormateada
       });
