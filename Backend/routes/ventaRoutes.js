@@ -78,29 +78,40 @@ router.get('/ventas_pendientes', async (req, res) => {
     }
 });
 
-// 📧 NUEVA RUTA DE PRUEBA: Envía correo desde el backend para evitar bloqueos CORS externos
+// 📧 NUEVA RUTA DE PRUEBA: Envía correo desde el backend usando fetch nativo para evitar dependencias
 router.post('/enviar-correo-prueba', async (req, res) => {
     const { cliente_nombre, cliente_email, total, productos, comprobante } = req.body;
 
     try {
-        await axios.post('https://api.emailjs.com/api/v1.0/email/send', {
-            service_id: 'service_0xlqzaq',
-            template_id: 'template_cy9a81x',
-            user_id: 'ombe2_2NkrxCxincc',
-            template_params: {
-                to_name: "Elo Joyería",
-                cliente_nombre: cliente_nombre,
-                cliente_email: cliente_email,
-                total: total,
-                productos: productos,
-                comprobante: comprobante
-            }
+        const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                service_id: 'service_0xlqzaq',
+                template_id: 'template_cy9a81x',
+                user_id: 'ombe2_2NkrxCxincc',
+                template_params: {
+                    to_name: "Elo Joyería",
+                    cliente_nombre: cliente_nombre,
+                    cliente_email: cliente_email,
+                    total: total,
+                    productos: productos,
+                    comprobante: comprobante
+                }
+            })
         });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || 'Error en la respuesta de EmailJS');
+        }
 
         res.status(200).json({ success: true, mensaje: 'Correo enviado correctamente desde el backend' });
     } catch (error) {
-        console.error('Error enviando correo desde backend:', error.response?.data || error.message);
-        res.status(500).json({ error: 'No se pudo enviar el correo', details: error.response?.data || error.message });
+        console.error('Error enviando correo desde backend:', error.message);
+        res.status(500).json({ error: 'No se pudo enviar el correo', details: error.message });
     }
 });
 
