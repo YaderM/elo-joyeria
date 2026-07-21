@@ -5,7 +5,7 @@ import axios from 'axios';
 import emailjs from '@emailjs/browser';
 
 function Checkout() {
-  const { cart, getCartTotal, clearCart } = useCart();
+  const { cart, getCartTotal, clearCart, removeFromCart } = useCart();
   const navigate = useNavigate();
   const total = getCartTotal();
 
@@ -18,6 +18,12 @@ function Checkout() {
       setFormData({ ...formData, comprobante: e.target.files[0] });
     } else {
       setFormData({ ...formData, [e.target.name]: e.target.value });
+    }
+  };
+
+  const handleEliminarItem = (id, nombreProducto) => {
+    if (window.confirm(`¿Estás seguro quieres eliminar este producto (${nombreProducto})?`)) {
+      removeFromCart(id);
     }
   };
 
@@ -88,7 +94,19 @@ function Checkout() {
         <div>
           <h2 style={{color: '#b59410'}}>Resumen de Factura</h2>
           {cart.map(item => (
-            <div key={item.id} style={estiloItem}><span>{item.nombre} x{item.cantidad}</span> <span>₡{item.precio * item.cantidad}</span></div>
+            <div key={item.id_producto || item.id} style={estiloItem}>
+              <span>{item.nombre} x{item.cantidad}</span>
+              <div style={{display: 'flex', alignItems: 'center', gap: '15px'}}>
+                <span>₡{item.precio * item.cantidad}</span>
+                <button 
+                  onClick={() => handleEliminarItem(item.id_producto || item.id, item.nombre)} 
+                  style={{background: '#c0392b', color: '#fff', border: 'none', borderRadius: '4px', width: '25px', height: '25px', cursor: 'pointer', fontWeight: 'bold'}}
+                  title="Quitar producto"
+                >
+                  -
+                </button>
+              </div>
+            </div>
           ))}
           <div style={{...estiloItem, fontWeight: 'bold', fontSize: '1.2rem'}}><span>TOTAL</span> <span>₡{total}</span></div>
           <button onClick={() => setPaso('DATOS')} style={estiloBoton}>Continuar con los datos</button>
@@ -100,6 +118,12 @@ function Checkout() {
           <input name="telefono" placeholder="Teléfono" required onChange={handleChange} style={estiloInput} />
           <input name="email" type="email" placeholder="Email" required onChange={handleChange} style={estiloInput} />
           <textarea name="direccion" placeholder="Dirección" required onChange={handleChange} style={estiloInput} />
+          
+          {/* Etiqueta agregada con el número de teléfono para SINPE */}
+          <div style={{background: '#222', border: '1px dashed #b59410', padding: '10px 15px', borderRadius: '6px', marginBottom: '10px', fontSize: '0.9rem', color: '#ddd'}}>
+            📱 Realizar pago SINPE Móvil al: <strong style={{color: '#b59410'}}>61130448</strong>
+          </div>
+
           <input type="file" name="comprobante" accept="image/*" required onChange={handleChange} style={estiloInput} />
           <div style={{display: 'flex', gap: '10px'}}>
             <button type="button" onClick={() => setPaso('RESUMEN')} style={{...estiloBoton, background: '#333'}}>Atrás</button>
@@ -111,7 +135,7 @@ function Checkout() {
   );
 }
 
-const estiloItem = { display: 'flex', justifyContent: 'space-between', padding: '15px 0', borderBottom: '1px solid #333' };
+const estiloItem = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 0', borderBottom: '1px solid #333' };
 const estiloInput = { width: '100%', padding: '15px', margin: '10px 0', background: '#222', border: '1px solid #333', borderRadius: '6px', color: '#fff', boxSizing: 'border-box' };
 const estiloBoton = { background: '#b59410', color: '#000', padding: '15px', border: 'none', width: '100%', cursor: 'pointer', fontWeight: 'bold', borderRadius: '6px', marginTop: '10px' };
 
