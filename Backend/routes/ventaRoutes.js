@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db'); // Necesario para las consultas directas
 const { procesarVenta } = require('../controllers/ventaController'); 
+const axios = require('axios'); // <--- Requerido para la ruta de prueba de correo
 
 // RUTA ORIGINAL
 router.post('/', async (req, res) => {
@@ -74,6 +75,32 @@ router.get('/ventas_pendientes', async (req, res) => {
         res.status(500).json({ error: 'Error en servidor: ' + error.message });
     } finally {
         if (connection) connection.release();
+    }
+});
+
+// 📧 NUEVA RUTA DE PRUEBA: Envía correo desde el backend para evitar bloqueos CORS externos
+router.post('/enviar-correo-prueba', async (req, res) => {
+    const { cliente_nombre, cliente_email, total, productos, comprobante } = req.body;
+
+    try {
+        await axios.post('https://api.emailjs.com/api/v1.0/email/send', {
+            service_id: 'service_0xlqzaq',
+            template_id: 'template_cy9a81x',
+            user_id: 'ombe2_2NkrxCxincc',
+            template_params: {
+                to_name: "Elo Joyería",
+                cliente_nombre: cliente_nombre,
+                cliente_email: cliente_email,
+                total: total,
+                productos: productos,
+                comprobante: comprobante
+            }
+        });
+
+        res.status(200).json({ success: true, mensaje: 'Correo enviado correctamente desde el backend' });
+    } catch (error) {
+        console.error('Error enviando correo desde backend:', error.response?.data || error.message);
+        res.status(500).json({ error: 'No se pudo enviar el correo', details: error.response?.data || error.message });
     }
 });
 
