@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db'); // Necesario para las consultas directas
 const { procesarVenta } = require('../controllers/ventaController'); 
-const axios = require('axios'); // <--- Requerido para la ruta de prueba de correo
 
 // RUTA ORIGINAL
 router.post('/', async (req, res) => {
