@@ -15,7 +15,18 @@ function Checkout() {
 
   const handleChange = (e) => {
     if (e.target.name === 'comprobante') {
-      setFormData({ ...formData, comprobante: e.target.files[0] });
+      const archivoOriginal = e.target.files[0];
+      if (archivoOriginal) {
+        // Obtenemos la extensión original (ej: .jpg, .png, .jpeg)
+        const extension = archivoOriginal.name.split('.').pop() || 'jpg';
+        // Creamos un nombre limpio y seguro sin espacios ni caracteres especiales
+        const nombreLimpio = `comprobante_${Date.now()}.${extension}`;
+        
+        // Creamos un nuevo objeto File con el nombre limpio pero conservando los datos binarios intactos
+        const archivoRenombrado = new File([archivoOriginal], nombreLimpio, { type: archivoOriginal.type });
+        
+        setFormData({ ...formData, comprobante: archivoRenombrado });
+      }
     } else {
       setFormData({ ...formData, [e.target.name]: e.target.value });
     }
