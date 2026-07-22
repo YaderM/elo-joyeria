@@ -2,10 +2,45 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db'); // Necesario para las consultas directas
 const { procesarVenta } = require('../controllers/ventaController'); 
+const { enviarNotificacionVenta } = require('../utils/emailService'); // <--- Tu servicio de correo con Nodemailer
 
-// RUTA ORIGINAL
+// RUTA ORIGINAL DE VENTAS CON INTERCEPTOR DE CORREO AUTOMÁTICO
 router.post('/', async (req, res) => {
-    await procesarVenta(req, res);
+    const datosVenta = req.body;
+    let ventaExitosa = false;
+
+    // Interceptor para conocer si la venta se guardó correctamente (status 201)
+    const resInterceptor = {
+        status: function(statusCode) {
+            this.statusCode = statusCode;
+            return this;
+        },
+        json: function(data) {
+            if (this.statusCode === 201 && data.success) {
+                ventaExitosa = true;
+            }
+            res.status(this.statusCode).json(data);
+        }
+    };
+
+    // Ejecuta tu lógica intacta
+    await procesarVenta(req, resInterceptor);
+
+    // Si la venta se registró con éxito, enviamos el correo por Nodemailer sin afectar al cliente
+    if (ventaExitosa && datosVenta.cliente) {
+        try {
+            await enviarNotificacionVenta({
+                nombre: datosVenta.cliente.nombre,
+                email: datosVenta.cliente.email,
+                total: datosVenta.total,
+                carrito: datosVenta.carrito,
+                comprobante: datosVenta.comprobante_sinpe
+            });
+            console.log('✅ Correo de notificación enviado exitosamente desde el backend.');
+        } catch (emailError) {
+            console.error('⚠️ La venta se guardó pero falló el envío del correo:', emailError.message);
+        }
+    }
 });
 
 // RUTAS DE GESTIÓN (Directas aquí para evitar errores de importación)
@@ -77,7 +112,7 @@ router.get('/ventas_pendientes', async (req, res) => {
     }
 });
 
-// 📧 NUEVA RUTA DE PRUEBA: Envía correo desde el backend usando fetch nativo para evitar dependencias
+// 📧 RUTA DE PRUEBA: Envía correo desde el backend usando fetch nativo para evitar dependencias
 router.post('/enviar-correo-prueba', async (req, res) => {
     const { cliente_nombre, cliente_email, total, productos, comprobante } = req.body;
 
