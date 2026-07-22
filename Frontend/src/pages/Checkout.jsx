@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import emailjs from '@emailjs/browser';
 
 function Checkout() {
   const { cart, getCartTotal, clearCart, removeFromCart } = useCart();
@@ -54,7 +53,7 @@ function Checkout() {
       const resImg = await axios.post(`https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_API_KEY}`, imageData);
       const comprobanteUrl = resImg.data.data.url;
 
-      // 1.5. Registrar en la base de datos (Backend con URL fija)
+      // 2. Registrar en la base de datos (Backend con URL fija) - El backend se encarga de enviar el correo con Nodemailer automáticamente
       await axios.post('https://elo-joyeria-backend.vercel.app/api/ventas', {
         cliente: { nombre: formData.nombre, email: formData.email },
         carrito: cart,
@@ -62,29 +61,12 @@ function Checkout() {
         comprobante_sinpe: comprobanteUrl
       });
 
-      // 2. Preparar datos para comunicación
+      // 3. Preparar datos para comunicación
       const listaProductos = cart.map(i => `${i.nombre} (x${i.cantidad})`).join(', ');
 
-      // 3. Disparador WhatsApp
+      // 4. Disparador WhatsApp
       const mensajeWA = `Hola Elo Joyería, nuevo pedido de: ${formData.nombre}. Total: ₡${total}. Productos: ${listaProductos}. Comprobante: ${comprobanteUrl}`;
       window.open(`https://wa.me/50661130448?text=${encodeURIComponent(mensajeWA)}`, '_blank');
-
-      // 4. Disparador Correo (EmailJS)
-      const templateParams = {
-        to_name: "Elo Joyería",
-        cliente_nombre: formData.nombre,
-        cliente_email: formData.email,
-        total: total,
-        productos: listaProductos,
-        comprobante: comprobanteUrl
-      };
-
-      await emailjs.send(
-        import.meta.env.VITE_EMAILJS_SERVICE_ID,
-        'template_0cflqo3',
-        templateParams,
-        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-      );
 
       alert('¡Pedido enviado con éxito!');
       clearCart();
