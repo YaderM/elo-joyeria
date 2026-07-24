@@ -117,7 +117,25 @@ function Checkout() {
             📱 Realizar pago SINPE Móvil al: <strong style={{color: '#b59410'}}>61130448</strong>
           </div>
 
-          <input type="file" name="comprobante" accept="image/*" required onChange={handleChange} style={estiloInput} />
+          {/* Input de archivo personalizado con texto claro */}
+          <div style={{ margin: '15px 0' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: '#b59410', fontWeight: 'bold' }}>
+              Comprobante de pago SINPE:
+            </label>
+            <input 
+              type="file" 
+              name="comprobante" 
+              id="comprobante-file"
+              accept="image/*" 
+              required 
+              onChange={handleChange} 
+              style={{ display: 'none' }} 
+            />
+            <label htmlFor="comprobante-file" style={estiloBotonArchivo}>
+              {formData.comprobante ? `📁 ${formData.comprobante.name}` : '📷 Agregar comprobante sinpe'}
+            </label>
+          </div>
+
           <div style={{display: 'flex', gap: '10px'}}>
             <button type="button" onClick={() => setPaso('RESUMEN')} style={{...estiloBoton, background: '#333'}}>Atrás</button>
             <button type="submit" disabled={cargando} style={estiloBoton}>{cargando ? 'Procesando...' : 'Confirmar Compra'}</button>
@@ -131,5 +149,6 @@ function Checkout() {
 const estiloItem = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 0', borderBottom: '1px solid #333' };
 const estiloInput = { width: '100%', padding: '15px', margin: '10px 0', background: '#222', border: '1px solid #333', borderRadius: '6px', color: '#fff', boxSizing: 'border-box' };
 const estiloBoton = { background: '#b59410', color: '#000', padding: '15px', border: 'none', width: '100%', cursor: 'pointer', fontWeight: 'bold', borderRadius: '6px', marginTop: '10px' };
+const estiloBotonArchivo = { display: 'block', width: '100%', padding: '15px', background: '#222', border: '1px dashed #b59410', borderRadius: '6px', color: '#fff', textAlign: 'center', cursor: 'pointer', boxSizing: 'border-box', fontWeight: 'bold' };
 
 export default Checkout;
