@@ -4,44 +4,8 @@ const db = require('../config/db'); // Necesario para las consultas directas
 const { procesarVenta } = require('../controllers/ventaController'); 
 const { enviarNotificacionVenta } = require('../utils/emailService'); // <--- Tu servicio de correo con Nodemailer
 
-// RUTA ORIGINAL DE VENTAS CON INTERCEPTOR DE CORREO AUTOMÁTICO
-router.post('/', async (req, res) => {
-    const datosVenta = req.body;
-    let ventaExitosa = false;
-
-    // Interceptor para conocer si la venta se guardó correctamente (status 201)
-    const resInterceptor = {
-        status: function(statusCode) {
-            this.statusCode = statusCode;
-            return this;
-        },
-        json: function(data) {
-            if (this.statusCode === 201 && data.success) {
-                ventaExitosa = true;
-            }
-            res.status(this.statusCode).json(data);
-        }
-    };
-
-    // Ejecuta tu lógica intacta
-    await procesarVenta(req, resInterceptor);
-
-    // Si la venta se registró con éxito, enviamos el correo por Nodemailer sin afectar al cliente
-    if (ventaExitosa && datosVenta.cliente) {
-        try {
-            await enviarNotificacionVenta({
-                nombre: datosVenta.cliente.nombre,
-                email: datosVenta.cliente.email,
-                total: datosVenta.total,
-                carrito: datosVenta.carrito,
-                comprobante: datosVenta.comprobante_sinpe
-            });
-            console.log('✅ Correo de notificación enviado exitosamente desde el backend.');
-        } catch (emailError) {
-            console.error('⚠️ La venta se guardó pero falló el envío del correo:', emailError.message);
-        }
-    }
-});
+// RUTA ORIGINAL DE VENTAS - Conectada directamente al controlador original para evitar bloqueos
+router.post('/', procesarVenta);
 
 // RUTAS DE GESTIÓN (Directas aquí para evitar errores de importación)
 router.get('/pendientes', async (req, res) => {
