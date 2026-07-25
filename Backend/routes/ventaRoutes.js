@@ -114,7 +114,7 @@ router.get('/ventas_pendientes', async (req, res) => {
 
 // 📧 RUTA DE PRUEBA: Envía correo desde el backend usando fetch nativo para evitar dependencias
 router.post('/enviar-correo-prueba', async (req, res) => {
-    const { cliente_nombre, cliente_email, total, productos, comprobante } = req.body;
+    const { cliente_nombre, cliente_email, monto_total, productos, comprobante } = req.body;
 
     try {
         const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
@@ -130,7 +130,7 @@ router.post('/enviar-correo-prueba', async (req, res) => {
                     to_name: "Elo Joyería",
                     cliente_nombre: cliente_nombre,
                     cliente_email: cliente_email,
-                    total: total,
+                    total: monto_total,
                     productos: productos,
                     comprobante: comprobante
                 }

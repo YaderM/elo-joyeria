@@ -15,7 +15,7 @@ exports.procesarVenta = async (req, res) => {
         // Consulta alineada con los nombres exactos de columnas estándar
         await connection.query(
             `INSERT INTO ventas_pendientes 
-             (id_venta, nombre_cliente, email_cliente, detalle_productos, total, comprobante_sinpe, estado) 
+             (id_venta, nombre_cliente, email_cliente, detalle_productos, monto_total, comprobante_sinpe, estado) 
              VALUES (?, ?, ?, ?, ?, ?, 'PENDIENTE')`,
             [idVenta, cliente.nombre, cliente.email, detalleJson, total, comprobante_sinpe]
         );
