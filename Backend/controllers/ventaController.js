@@ -1,8 +1,7 @@
 const db = require('../config/db');
-const { v4: uuidv4 } = require('uuid'); // Asegúrate de tener instalado 'uuid'
+const { v4: uuidv4 } = require('uuid');
 
 exports.procesarVenta = async (req, res) => {
-    // Obtenemos los datos del frontend
     const { cliente, carrito, total, comprobante_sinpe } = req.body;
 
     const connection = await db.getConnection();
@@ -10,25 +9,16 @@ exports.procesarVenta = async (req, res) => {
     try {
         await connection.beginTransaction();
 
-        // 1. Generar ID único para la venta pendiente
         const idVenta = uuidv4(); 
-        
-        // 2. Convertir el carrito a JSON para guardarlo en la columna 'detalle_productos'
         const detalleJson = JSON.stringify(carrito);
 
-        // 3. Insertar en la tabla 'ventas_pendientes'
-        // Nota: Ajustado a los nombres exactos de tu tabla
+        // Consulta alineada con los nombres exactos de columnas estándar
         await connection.query(
             `INSERT INTO ventas_pendientes 
-             (id_venta, nombre_cliente, email_cliente, detalle_productos, monto_total, comprobante_sinpe, estado, fecha_creacion) 
-             VALUES (?, ?, ?, ?, ?, ?, 'PENDIENTE', NOW())`,
+             (id_venta, nombre_cliente, email_cliente, detalle_productos, total, comprobante_sinpe, estado) 
+             VALUES (?, ?, ?, ?, ?, ?, 'PENDIENTE')`,
             [idVenta, cliente.nombre, cliente.email, detalleJson, total, comprobante_sinpe]
         );
-
-        // 4. (Opcional) Si decides rebajar stock aquí mismo al pedir:
-        // for (const item of carrito) {
-        //     await connection.query('UPDATE productos SET stock = stock - ? WHERE id_producto = ?', [item.cantidad, item.id_producto]);
-        // }
 
         await connection.commit();
         res.status(201).json({ success: true, mensaje: 'Solicitud de venta registrada correctamente', idVenta });
