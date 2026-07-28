@@ -28,9 +28,9 @@ router.post('/', async (req, res) => {
     // Si la venta se registró con éxito, enviamos el correo usando EmailJS sin afectar al cliente
     if (ventaExitosa && datosVenta.cliente) {
         try {
-            // Formateamos el carrito tal como lo mostraba el diseño de pedidos
+            // Formateamos el carrito limpiamente sin etiquetas repetidas
             const productosTexto = datosVenta.carrito ? datosVenta.carrito.map(item => 
-                `• ${item.nombre} - Cantidad: ${item.cantidad} - Precio: ₡${item.precio}`
+                `${item.nombre} - Cantidad: ${item.cantidad} - Precio: ₡${item.precio}`
             ).join('\n') : '';
 
             const emailResponse = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
@@ -40,10 +40,10 @@ router.post('/', async (req, res) => {
                 },
                 body: JSON.stringify({
                     service_id: 'service_0xlqzaq',
-                    template_id: 'template_0cflqo3', // <--- Plantilla correcta de pedidos
+                    template_id: 'template_0cflqo3',
                     user_id: 'ombe2_2NkrxCxincc',
                     template_params: {
-                        to_name: datosVenta.cliente.nombre, // <--- Ahora toma el nombre del cliente para el saludo
+                        to_name: datosVenta.cliente.nombre,
                         cliente_nombre: datosVenta.cliente.nombre,
                         cliente_email: datosVenta.cliente.email,
                         total: datosVenta.total,

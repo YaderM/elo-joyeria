@@ -13,6 +13,9 @@ function AdminPanel() {
   const navigate = useNavigate();
   const [seccionActiva, setSeccionActiva] = useState('inventario');
   
+  // Estado para controlar el menú hamburguesa en dispositivos móviles
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  
   const API_URL = 'https://elo-joyeria-backend.vercel.app/api';
 
   // Configuración de cabecera con el token
@@ -168,124 +171,178 @@ function AdminPanel() {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '90vh', backgroundColor: '#f4f6f8', margin: 0 }}>
-      <aside style={estiloSidebar}>
-        <div>
-          <div style={estiloBrand}>
-            <h3 style={{ color: '#d4af37', fontSize: '1.2rem', fontWeight: '400', letterSpacing: '1.5px', margin: '0 0 5px 0' }}>ELO CONTROL</h3>
-            <p style={{ color: '#888', fontSize: '0.75rem', margin: 0, textTransform: 'uppercase' }}>Administrador</p>
+    <>
+      <style>{`
+        @media (max-width: 768px) {
+          .admin-main-container {
+            flex-direction: column !important;
+          }
+          .admin-sidebar {
+            width: 100% !important;
+            height: auto !important;
+            position: relative !important;
+          }
+          .admin-mobile-header {
+            display: flex !important;
+          }
+          .admin-sidebar-content {
+            display: none;
+          }
+          .admin-sidebar-content.open {
+            display: flex !important;
+            flex-direction: column;
+            justify-content: space-between;
+          }
+          .admin-content-area {
+            padding: 15px !important;
+          }
+          .admin-header-seccion {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 10px;
+          }
+          .reporte-filtros-fechas {
+            flex-direction: column !important;
+            align-items: stretch !important;
+          }
+          .modal-formulario-filas {
+            flex-direction: column !important;
+            gap: 0 !important;
+          }
+        }
+      `}</style>
+      <div className="admin-main-container" style={{ display: 'flex', minHeight: '90vh', backgroundColor: '#f4f6f8', margin: 0 }}>
+        <aside className="admin-sidebar" style={estiloSidebar}>
+          {/* Cabecera Móvil Hamburguesa */}
+          <div className="admin-mobile-header" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px', borderBottom: '1px solid #333' }}>
+            <div>
+              <h3 style={{ color: '#d4af37', fontSize: '1.1rem', fontWeight: '400', letterSpacing: '1.5px', margin: '0' }}>ELO CONTROL</h3>
+              <p style={{ color: '#888', fontSize: '0.7rem', margin: 0, textTransform: 'uppercase' }}>Administrador</p>
+            </div>
+            <button onClick={() => setMenuAbierto(!menuAbierto)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.5rem', cursor: 'pointer' }}>
+              {menuAbierto ? '✕' : '☰'}
+            </button>
           </div>
-          <nav style={{ marginTop: '30px' }}>
-            <button onClick={() => setSeccionActiva('inventario')} style={seccionActiva === 'inventario' ? estiloBotonActivo : estiloBotonSidebar}>📦 Gestión de Inventario</button>
-            <button onClick={() => setSeccionActiva('categorias')} style={seccionActiva === 'categorias' ? estiloBotonActivo : estiloBotonSidebar}>🗂️ Categorías y Tipos</button>
-            <button onClick={() => setSeccionActiva('promociones')} style={seccionActiva === 'promociones' ? estiloBotonActivo : estiloBotonSidebar}>🏷️ Precios y Ofertas</button>
-            <button onClick={() => setSeccionActiva('pedidos')} style={seccionActiva === 'pedidos' ? estiloBotonActivo : estiloBotonSidebar}>🛒 Gestión de Pedidos</button>
-            <button onClick={() => setSeccionActiva('reportes')} style={seccionActiva === 'reportes' ? estiloBotonActivo : estiloBotonSidebar}>📊 Reportes PDF</button>
-          </nav>
-        </div>
-        <div style={{ padding: '0 20px' }}>
-          <button onClick={() => { localStorage.removeItem('adminToken'); navigate('/login'); }} style={estiloBotonCerrar}>🚪 Cerrar Sesión</button>
-        </div>
-      </aside>
 
-      <main style={{ flexGrow: 1, padding: '40px', overflowY: 'auto' }}>
-        <div style={estiloHeaderSeccion}>
-          <h2 style={{ fontSize: '1.6rem', fontWeight: '400', color: '#222', textTransform: 'uppercase' }}>
-            {seccionActiva === 'inventario' && '📦 Panel de Control de Inventario'}
-            {seccionActiva === 'categorias' && '🗂️ Configuración de Materiales y Tipos'}
-            {seccionActiva === 'promociones' && '🏷️ Campañas, Precios Especiales y Ofertas'}
-            {seccionActiva === 'pedidos' && '🛒 Gestión de Pedidos'}
-            {seccionActiva === 'reportes' && '📊 Generador de Reportes Analíticos'}
-          </h2>
-          <span style={estiloBadge}>🟢 Conexión Segura MySQL</span>
-        </div>
-
-        <div style={estiloContenedorBlanco}>
-          {seccionActiva === 'inventario' && (
-            cargando ? <p style={{ textAlign: 'center', color: '#777' }}>Consultando base de datos...</p> :
-            <GestionInventario 
-              productos={productos} materiales={materiales} tipos={tipos}
-              cargarProductos={cargarProductos} iniciarEdicion={iniciarEdicion}
-              iniciarCreacion={iniciarCreacion} manejarEliminar={manejarEliminar}
-            />
-          )}
-          {seccionActiva === 'categorias' && <GestionCategorias materiales={materiales} tipos={tipos} cargarAuxiliares={cargarAuxiliares} />}
-          {seccionActiva === 'promociones' && <GestionPromociones productos={productos} cargarProductos={cargarProductos} />}
-          {seccionActiva === 'pedidos' && <GestionPedidos onPedidoConfirmado={() => cargarProductos()} />}
-          {seccionActiva === 'reportes' && (
-            <div style={{ padding: '10px' }}>
-              <div style={{ display: 'flex', gap: '15px', marginBottom: '30px' }}>
-                <button onClick={() => manejarCambioTipoReporte('inventario')} style={seccionActivaReporte === 'inventario' ? estiloBotonFiltroActivo : estiloBotonFiltro}>📋 Inventario</button>
-                <button onClick={() => manejarCambioTipoReporte('productos')} style={seccionActivaReporte === 'productos' ? estiloBotonFiltroActivo : estiloBotonFiltro}>🛍️ Reporte Productos</button>
-                <button onClick={() => setSeccionActivaReporte('rango')} style={seccionActivaReporte === 'rango' ? estiloBotonFiltroActivo : estiloBotonFiltro}>🗓️ Rango de Fechas</button>
+          <div className={`admin-sidebar-content ${menuAbierto ? 'open' : ''}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
+            <div>
+              <div style={estiloBrand} className="desktop-brand">
+                <h3 style={{ color: '#d4af37', fontSize: '1.2rem', fontWeight: '400', letterSpacing: '1.5px', margin: '0 0 5px 0' }}>ELO CONTROL</h3>
+                <p style={{ color: '#888', fontSize: '0.75rem', margin: 0, textTransform: 'uppercase' }}>Administrador</p>
               </div>
-              {seccionActivaReporte === 'rango' && (
-                <div style={{ display: 'flex', gap: '20px', alignItems: 'center', backgroundColor: '#f9f9f9', padding: '15px 20px', borderRadius: '6px', border: '1px solid #eee', marginBottom: '30px' }}>
-                  <input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} style={estiloInputFecha} />
-                  <input type="date" value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} style={estiloInputFecha} />
-                  <button onClick={procesarFiltroFechasVentas} style={{ padding: '10px 20px', backgroundColor: '#222', color: '#fff', borderRadius: '4px', cursor: 'pointer' }}>🔍 Consultar</button>
-                </div>
-              )}
-              <ReporteManager 
-                seccionActivaReporte={seccionActivaReporte} datosReporte={datosReporte}
-                estiloBotonDescargaPRO={estiloBotonDescargaPRO} estiloCeldaTh={estiloCeldaTh} estiloCeldaTd={estiloCeldaTd}
+              <nav style={{ marginTop: '30px' }}>
+                <button onClick={() => { setSeccionActiva('inventario'); setMenuAbierto(false); }} style={seccionActiva === 'inventario' ? estiloBotonActivo : estiloBotonSidebar}>📦 Gestión de Inventario</button>
+                <button onClick={() => { setSeccionActiva('categorias'); setMenuAbierto(false); }} style={seccionActiva === 'categorias' ? estiloBotonActivo : estiloBotonSidebar}>🗂️ Categorías y Tipos</button>
+                <button onClick={() => { setSeccionActiva('promociones'); setMenuAbierto(false); }} style={seccionActiva === 'promociones' ? estiloBotonActivo : estiloBotonSidebar}>🏷️ Precios y Ofertas</button>
+                <button onClick={() => { setSeccionActiva('pedidos'); setMenuAbierto(false); }} style={seccionActiva === 'pedidos' ? estiloBotonActivo : estiloBotonSidebar}>🛒 Gestión de Pedidos</button>
+                <button onClick={() => { setSeccionActiva('reportes'); setMenuAbierto(false); }} style={seccionActiva === 'reportes' ? estiloBotonActivo : estiloBotonSidebar}>📊 Reportes PDF</button>
+              </nav>
+            </div>
+            <div style={{ padding: '20px 20px 0 20px' }}>
+              <button onClick={() => { localStorage.removeItem('adminToken'); navigate('/login'); }} style={estiloBotonCerrar}>🚪 Cerrar Sesión</button>
+            </div>
+          </div>
+        </aside>
+
+        <main className="admin-content-area" style={{ flexGrow: 1, padding: '40px', overflowY: 'auto', minWidth: 0 }}>
+          <div className="admin-header-seccion" style={estiloHeaderSeccion}>
+            <h2 style={{ fontSize: '1.6rem', fontWeight: '400', color: '#222', textTransform: 'uppercase', margin: 0 }}>
+              {seccionActiva === 'inventario' && '📦 Panel de Control de Inventario'}
+              {seccionActiva === 'categorias' && '🗂️ Configuración de Materiales y Tipos'}
+              {seccionActiva === 'promociones' && '🏷️ Campañas, Precios Especiales y Ofertas'}
+              {seccionActiva === 'pedidos' && '🛒 Gestión de Pedidos'}
+              {seccionActiva === 'reportes' && '📊 Generador de Reportes Analíticos'}
+            </h2>
+            <span style={estiloBadge}>🟢 Conexión Segura MySQL</span>
+          </div>
+
+          <div style={estiloContenedorBlanco}>
+            {seccionActiva === 'inventario' && (
+              cargando ? <p style={{ textAlign: 'center', color: '#777' }}>Consultando base de datos...</p> :
+              <GestionInventario 
+                productos={productos} materiales={materiales} tipos={tipos}
+                cargarProductos={cargarProductos} iniciarEdicion={iniciarEdicion}
+                iniciarCreacion={iniciarCreacion} manejarEliminar={manejarEliminar}
               />
-            </div>
-          )}
-        </div>
-      </main>
-
-      {mostrarModal && (
-        <div style={estiloOverlayModal}>
-          <div style={estiloCuerpoModal}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#d4af37' }}>✨ {editandoId ? 'EDITAR JOYA' : 'REGISTRAR NUEVA JOYA'}</h3>
-              <button onClick={() => setMostrarModal(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.2rem' }}>×</button>
-            </div>
-            <form onSubmit={guardarProducto}>
-              <div style={{ display: 'flex', gap: '15px' }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem' }}>Nombre de la Joya</label>
-                  <input type="text" value={formProducto.nombre} onChange={(e) => setFormProducto({...formProducto, nombre: e.target.value})} style={estiloInputForm} required />
+            )}
+            {seccionActiva === 'categorias' && <GestionCategorias materiales={materiales} tipos={tipos} cargarAuxiliares={cargarAuxiliares} />}
+            {seccionActiva === 'promociones' && <GestionPromociones productos={productos} cargarProductos={cargarProductos} />}
+            {seccionActiva === 'pedidos' && <GestionPedidos onPedidoConfirmado={() => cargarProductos()} />}
+            {seccionActiva === 'reportes' && (
+              <div style={{ padding: '10px' }}>
+                <div style={{ display: 'flex', gap: '15px', marginBottom: '30px', flexWrap: 'wrap' }}>
+                  <button onClick={() => manejarCambioTipoReporte('inventario')} style={seccionActivaReporte === 'inventario' ? estiloBotonFiltroActivo : estiloBotonFiltro}>📋 Inventario</button>
+                  <button onClick={() => manejarCambioTipoReporte('productos')} style={seccionActivaReporte === 'productos' ? estiloBotonFiltroActivo : estiloBotonFiltro}>🛍️ Reporte Productos</button>
+                  <button onClick={() => setSeccionActivaReporte('rango')} style={seccionActivaReporte === 'rango' ? estiloBotonFiltroActivo : estiloBotonFiltro}>🗓️ Rango de Fechas</button>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem' }}>Precio (CRC)</label>
-                  <input type="number" value={formProducto.precio} onChange={(e) => setFormProducto({...formProducto, precio: e.target.value})} style={estiloInputForm} required />
-                </div>
+                {seccionActivaReporte === 'rango' && (
+                  <div className="reporte-filtros-fechas" style={{ display: 'flex', gap: '20px', alignItems: 'center', backgroundColor: '#f9f9f9', padding: '15px 20px', borderRadius: '6px', border: '1px solid #eee', marginBottom: '30px' }}>
+                    <input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} style={estiloInputFecha} />
+                    <input type="date" value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} style={estiloInputFecha} />
+                    <button onClick={procesarFiltroFechasVentas} style={{ padding: '10px 20px', backgroundColor: '#222', color: '#fff', borderRadius: '4px', cursor: 'pointer', border: 'none' }}>🔍 Consultar</button>
+                  </div>
+                )}
+                <ReporteManager 
+                  seccionActivaReporte={seccionActivaReporte} datosReporte={datosReporte}
+                  estiloBotonDescargaPRO={estiloBotonDescargaPRO} estiloCeldaTh={estiloCeldaTh} estiloCeldaTd={estiloCeldaTd}
+                />
               </div>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem' }}>URL de la Imagen</label>
-              <input type="text" value={formProducto.imagen_url} onChange={(e) => setFormProducto({...formProducto, imagen_url: e.target.value})} style={estiloInputForm} />
-              <div style={{ display: 'flex', gap: '15px' }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem' }}>Material</label>
-                  <select value={formProducto.material_id} onChange={(e) => setFormProducto({...formProducto, material_id: e.target.value})} style={estiloInputForm}>
-                    <option value="">-- Seleccione --</option>
-                    {materiales.map(m => <option key={m.id_material} value={m.id_material}>{m.nombre}</option>)}
-                  </select>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem' }}>Tipo de Joya</label>
-                  <select value={formProducto.tipo_id} onChange={(e) => setFormProducto({...formProducto, tipo_id: e.target.value})} style={estiloInputForm}>
-                    <option value="">-- Seleccione --</option>
-                    {tipos.map(t => <option key={t.id_tipo} value={t.id_tipo}>{t.nombre}</option>)}
-                  </select>
-                </div>
-                <div style={{ flex: 0.5 }}>
-                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem' }}>Stock</label>
-                  <input type="number" value={formProducto.stock} onChange={(e) => setFormProducto({...formProducto, stock: e.target.value})} style={estiloInputForm} />
-                </div>
-              </div>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem' }}>Descripción</label>
-              <textarea value={formProducto.descripcion} onChange={(e) => setFormProducto({...formProducto, descripcion: e.target.value})} style={{...estiloInputForm, height: '80px'}}></textarea>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-                <button type="button" onClick={() => setMostrarModal(false)} style={{ padding: '10px 20px', border: '1px solid #ccc', borderRadius: '4px', background: '#fff', cursor: 'pointer' }}>Cancelar</button>
-                <button type="submit" style={{ padding: '10px 30px', background: '#b59410', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Guardar</button>
-              </div>
-            </form>
+            )}
           </div>
-        </div>
-      )}
-    </div>
+        </main>
+
+        {mostrarModal && (
+          <div style={estiloOverlayModal}>
+            <div style={estiloCuerpoModal}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#d4af37' }}>✨ {editandoId ? 'EDITAR JOYA' : 'REGISTRAR NUEVA JOYA'}</h3>
+                <button onClick={() => setMostrarModal(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.2rem' }}>×</button>
+              </div>
+              <form onSubmit={guardarProducto}>
+                <div className="modal-formulario-filas" style={{ display: 'flex', gap: '15px' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem' }}>Nombre de la Joya</label>
+                    <input type="text" value={formProducto.nombre} onChange={(e) => setFormProducto({...formProducto, nombre: e.target.value})} style={estiloInputForm} required />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem' }}>Precio (CRC)</label>
+                    <input type="number" value={formProducto.precio} onChange={(e) => setFormProducto({...formProducto, precio: e.target.value})} style={estiloInputForm} required />
+                  </div>
+                </div>
+                <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem' }}>URL de la Imagen</label>
+                <input type="text" value={formProducto.imagen_url} onChange={(e) => setFormProducto({...formProducto, imagen_url: e.target.value})} style={estiloInputForm} />
+                <div className="modal-formulario-filas" style={{ display: 'flex', gap: '15px' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem' }}>Material</label>
+                    <select value={formProducto.material_id} onChange={(e) => setFormProducto({...formProducto, material_id: e.target.value})} style={estiloInputForm}>
+                      <option value="">-- Seleccione --</option>
+                      {materiales.map(m => <option key={m.id_material} value={m.id_material}>{m.nombre}</option>)}
+                    </select>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem' }}>Tipo de Joya</label>
+                    <select value={formProducto.tipo_id} onChange={(e) => setFormProducto({...formProducto, tipo_id: e.target.value})} style={estiloInputForm}>
+                      <option value="">-- Seleccione --</option>
+                      {tipos.map(t => <option key={t.id_tipo} value={t.id_tipo}>{t.nombre}</option>)}
+                    </select>
+                  </div>
+                  <div style={{ flex: 0.5 }}>
+                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem' }}>Stock</label>
+                    <input type="number" value={formProducto.stock} onChange={(e) => setFormProducto({...formProducto, stock: e.target.value})} style={estiloInputForm} />
+                  </div>
+                </div>
+                <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem' }}>Descripción</label>
+                <textarea value={formProducto.descripcion} onChange={(e) => setFormProducto({...formProducto, descripcion: e.target.value})} style={{...estiloInputForm, height: '80px'}}></textarea>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+                  <button type="button" onClick={() => setMostrarModal(false)} style={{ padding: '10px 20px', border: '1px solid #ccc', borderRadius: '4px', background: '#fff', cursor: 'pointer' }}>Cancelar</button>
+                  <button type="submit" style={{ padding: '10px 30px', background: '#b59410', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Guardar</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 
@@ -299,7 +356,7 @@ const estiloHeaderSeccion = { display: 'flex', justifyContent: 'space-between', 
 const estiloBadge = { fontSize: '0.9rem', color: '#666', backgroundColor: '#fff', padding: '6px 15px', borderRadius: '20px', border: '1px solid #ddd' };
 const estiloContenedorBlanco = { backgroundColor: '#fff', borderRadius: '10px', padding: '30px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)', border: '1px solid #e6e6e6' };
 const estiloOverlayModal = { position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 };
-const estiloCuerpoModal = { backgroundColor: '#fff', width: '90%', maxWidth: '600px', padding: '30px', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' };
+const estiloCuerpoModal = { backgroundColor: '#fff', width: '90%', maxWidth: '600px', padding: '30px', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', maxHeight: '90vh', overflowY: 'auto' };
 const estiloInputForm = { width: '100%', padding: '12px', marginBottom: '12px', border: '1px solid #ddd', borderRadius: '6px', boxSizing: 'border-box', fontSize: '0.95rem' };
 const estiloBotonFiltro = { padding: '10px 20px', border: '1px solid #ccc', background: '#fff', color: '#555', borderRadius: '4px', cursor: 'pointer', fontSize: '0.88rem', fontWeight: '500' };
 const estiloBotonFiltroActivo = { ...estiloBotonFiltro, background: '#222', color: '#fff', borderColor: '#222' };
