@@ -28,9 +28,9 @@ router.post('/', async (req, res) => {
     // Si la venta se registró con éxito, enviamos el correo usando EmailJS sin afectar al cliente
     if (ventaExitosa && datosVenta.cliente) {
         try {
-            // Formateamos el carrito en texto plano para que se visualice correctamente en la plantilla
+            // Formateamos el carrito tal como lo mostraba el diseño de pedidos
             const productosTexto = datosVenta.carrito ? datosVenta.carrito.map(item => 
-                `- ${item.nombre} (Cant: ${item.cantidad}) - ₡${item.precio}`
+                `• ${item.nombre} - Cantidad: ${item.cantidad} - Precio: ₡${item.precio}`
             ).join('\n') : '';
 
             const emailResponse = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
@@ -40,10 +40,10 @@ router.post('/', async (req, res) => {
                 },
                 body: JSON.stringify({
                     service_id: 'service_0xlqzaq',
-                    template_id: 'template_cy9a81x',
+                    template_id: 'template_0cflqo3', // <--- Plantilla correcta de pedidos
                     user_id: 'ombe2_2NkrxCxincc',
                     template_params: {
-                        to_name: "Elo Joyería",
+                        to_name: datosVenta.cliente.nombre, // <--- Ahora toma el nombre del cliente para el saludo
                         cliente_nombre: datosVenta.cliente.nombre,
                         cliente_email: datosVenta.cliente.email,
                         total: datosVenta.total,
@@ -146,10 +146,10 @@ router.post('/enviar-correo-prueba', async (req, res) => {
             },
             body: JSON.stringify({
                 service_id: 'service_0xlqzaq',
-                template_id: 'template_cy9a81x',
+                template_id: 'template_0cflqo3',
                 user_id: 'ombe2_2NkrxCxincc',
                 template_params: {
-                    to_name: "Elo Joyería",
+                    to_name: cliente_nombre || "Elo Joyería",
                     cliente_nombre: cliente_nombre,
                     cliente_email: cliente_email,
                     total: monto_total,
