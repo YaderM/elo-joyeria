@@ -2,9 +2,8 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db'); // Necesario para las consultas directas
 const { procesarVenta } = require('../controllers/ventaController'); 
-const { enviarNotificacionVenta } = require('../utils/emailService'); // <--- Tu servicio de correo con Nodemailer
 
-// RUTA ORIGINAL DE VENTAS CON INTERCEPTOR DE CORREO AUTOMÁTICO
+// RUTA ORIGINAL DE VENTAS CON INTERCEPTOR DE CORREO AUTOMÁTICO (EMAILJS)
 router.post('/', async (req, res) => {
     const datosVenta = req.body;
     let ventaExitosa = false;
@@ -26,17 +25,40 @@ router.post('/', async (req, res) => {
     // Ejecuta tu lógica intacta
     await procesarVenta(req, resInterceptor);
 
-    // Si la venta se registró con éxito, enviamos el correo por Nodemailer sin afectar al cliente
+    // Si la venta se registró con éxito, enviamos el correo usando EmailJS sin afectar al cliente
     if (ventaExitosa && datosVenta.cliente) {
         try {
-            await enviarNotificacionVenta({
-                nombre: datosVenta.cliente.nombre,
-                email: datosVenta.cliente.email,
-                total: datosVenta.total,
-                carrito: datosVenta.carrito,
-                comprobante: datosVenta.comprobante_sinpe
+            // Formateamos el carrito en texto plano para que se visualice correctamente en la plantilla
+            const productosTexto = datosVenta.carrito ? datosVenta.carrito.map(item => 
+                `- ${item.nombre} (Cant: ${item.cantidad}) - ₡${item.precio}`
+            ).join('\n') : '';
+
+            const emailResponse = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    service_id: 'service_0xlqzaq',
+                    template_id: 'template_cy9a81x',
+                    user_id: 'ombe2_2NkrxCxincc',
+                    template_params: {
+                        to_name: "Elo Joyería",
+                        cliente_nombre: datosVenta.cliente.nombre,
+                        cliente_email: datosVenta.cliente.email,
+                        total: datosVenta.total,
+                        productos: productosTexto,
+                        comprobante: datosVenta.comprobante_sinpe || 'No adjunto'
+                    }
+                })
             });
-            console.log('✅ Correo de notificación enviado exitosamente desde el backend.');
+
+            if (!emailResponse.ok) {
+                const errorText = await emailResponse.text();
+                throw new Error(errorText || 'Error en la respuesta de EmailJS');
+            }
+
+            console.log('✅ Correo de notificación enviado exitosamente desde el backend via EmailJS.');
         } catch (emailError) {
             console.error('⚠️ La venta se guardó pero falló el envío del correo:', emailError.message);
         }
