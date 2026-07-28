@@ -185,16 +185,28 @@ function AdminPanel() {
           .admin-mobile-header {
             display: flex !important;
           }
+          .desktop-brand {
+            display: none !important;
+          }
           .admin-sidebar-content {
-            display: none;
+            display: none !important;
           }
           .admin-sidebar-content.open {
             display: flex !important;
             flex-direction: column;
             justify-content: space-between;
+            background-color: #1a1a1a;
+            position: absolute;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            z-index: 999;
+            padding-bottom: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
           }
           .admin-content-area {
             padding: 15px !important;
+            width: 100% !important;
           }
           .admin-header-seccion {
             flex-direction: column;
@@ -211,26 +223,29 @@ function AdminPanel() {
           }
         }
       `}</style>
-      <div className="admin-main-container" style={{ display: 'flex', minHeight: '90vh', backgroundColor: '#f4f6f8', margin: 0 }}>
+      <div className="admin-main-container" style={{ display: 'flex', minHeight: '90vh', backgroundColor: '#f4f6f8', margin: 0, position: 'relative' }}>
+        
+        {/* SIDEBAR */}
         <aside className="admin-sidebar" style={estiloSidebar}>
-          {/* Cabecera Móvil Hamburguesa */}
-          <div className="admin-mobile-header" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px', borderBottom: '1px solid #333' }}>
+          {/* Cabecera Móvil Hamburguesa (Solo se muestra en celular) */}
+          <div className="admin-mobile-header" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', padding: '15px 20px', backgroundColor: '#1a1a1a', width: '100%', boxSizing: 'border-box' }}>
             <div>
               <h3 style={{ color: '#d4af37', fontSize: '1.1rem', fontWeight: '400', letterSpacing: '1.5px', margin: '0' }}>ELO CONTROL</h3>
               <p style={{ color: '#888', fontSize: '0.7rem', margin: 0, textTransform: 'uppercase' }}>Administrador</p>
             </div>
-            <button onClick={() => setMenuAbierto(!menuAbierto)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.5rem', cursor: 'pointer' }}>
+            <button onClick={() => setMenuAbierto(!menuAbierto)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.8rem', cursor: 'pointer', padding: '0 5px' }}>
               {menuAbierto ? '✕' : '☰'}
             </button>
           </div>
 
+          {/* Opciones del Menú (En PC siempre visible, en Celular se despliega con la hamburguesa) */}
           <div className={`admin-sidebar-content ${menuAbierto ? 'open' : ''}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
             <div>
               <div style={estiloBrand} className="desktop-brand">
                 <h3 style={{ color: '#d4af37', fontSize: '1.2rem', fontWeight: '400', letterSpacing: '1.5px', margin: '0 0 5px 0' }}>ELO CONTROL</h3>
                 <p style={{ color: '#888', fontSize: '0.75rem', margin: 0, textTransform: 'uppercase' }}>Administrador</p>
               </div>
-              <nav style={{ marginTop: '30px' }}>
+              <nav style={{ marginTop: '20px' }}>
                 <button onClick={() => { setSeccionActiva('inventario'); setMenuAbierto(false); }} style={seccionActiva === 'inventario' ? estiloBotonActivo : estiloBotonSidebar}>📦 Gestión de Inventario</button>
                 <button onClick={() => { setSeccionActiva('categorias'); setMenuAbierto(false); }} style={seccionActiva === 'categorias' ? estiloBotonActivo : estiloBotonSidebar}>🗂️ Categorías y Tipos</button>
                 <button onClick={() => { setSeccionActiva('promociones'); setMenuAbierto(false); }} style={seccionActiva === 'promociones' ? estiloBotonActivo : estiloBotonSidebar}>🏷️ Precios y Ofertas</button>
@@ -244,7 +259,8 @@ function AdminPanel() {
           </div>
         </aside>
 
-        <main className="admin-content-area" style={{ flexGrow: 1, padding: '40px', overflowY: 'auto', minWidth: 0 }}>
+        {/* CONTENIDO PRINCIPAL (Ocupa toda la pantalla cuando el menú se oculta en móviles) */}
+        <main className="admin-content-area" style={{ flexGrow: 1, padding: '40px', overflowY: 'auto', minWidth: 0, boxSizing: 'border-box' }}>
           <div className="admin-header-seccion" style={estiloHeaderSeccion}>
             <h2 style={{ fontSize: '1.6rem', fontWeight: '400', color: '#222', textTransform: 'uppercase', margin: 0 }}>
               {seccionActiva === 'inventario' && '📦 Panel de Control de Inventario'}
@@ -347,7 +363,7 @@ function AdminPanel() {
 }
 
 // Estilos Constantes
-const estiloSidebar = { width: '260px', backgroundColor: '#1a1a1a', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '30px 0' };
+const estiloSidebar = { width: '260px', backgroundColor: '#1a1a1a', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '30px 0', boxSizing: 'border-box' };
 const estiloBrand = { padding: '0 25px 25px 25px', borderBottom: '1px solid #333', textAlign: 'center' };
 const estiloBotonSidebar = { width: '100%', textAlign: 'left', padding: '14px 25px', background: 'none', border: 'none', color: '#aaa', fontSize: '0.95rem', cursor: 'pointer', display: 'block' };
 const estiloBotonActivo = { ...estiloBotonSidebar, color: '#fff', backgroundColor: '#b59410', borderLeft: '4px solid #fff', fontWeight: '500' };
