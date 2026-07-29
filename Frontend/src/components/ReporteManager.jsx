@@ -122,18 +122,17 @@ export default function ReporteManager({
     XLSX.writeFile(wb, `Reporte_Elo_${seccionActivaReporte}.xlsx`);
   };
 
-  // AJUSTE: Validamos que haya datos reales, ocultando la tabla si son los datos de relleno "N/A"
   const hayDatosReales = datosFiltrados && datosFiltrados.length > 0 && 
     (esVentas ? datosFiltrados[0].fecha_creacion !== 'N/A' : true);
 
   return (
-    <div style={{ marginTop: '20px' }}>
+    <div style={{ width: '100%', boxSizing: 'border-box', marginTop: '20px' }}>
       {/* Sección de Filtros siempre visible */}
-      <div style={{ marginBottom: '15px' }}>
+      <div style={{ marginBottom: '15px', width: '100%', boxSizing: 'border-box' }}>
         {esVentas && (
-          <div style={{ marginBottom: '10px', padding: '10px', background: '#f9f9f9', borderRadius: '5px' }}>
+          <div style={{ marginBottom: '10px', padding: '10px', background: '#f9f9f9', borderRadius: '5px', boxSizing: 'border-box' }}>
              <label style={{ marginRight: '10px' }}>Filtrar Estado:</label>
-             <select onChange={(e) => setFiltroEstado(e.target.value)} value={filtroEstado}>
+             <select onChange={(e) => setFiltroEstado(e.target.value)} value={filtroEstado} style={{ padding: '6px', borderRadius: '4px', border: '1px solid #ccc' }}>
                <option value="TODAS">Todas</option>
                <option value="CONFIRMADA">Confirmadas</option>
                <option value="PENDIENTE">Pendientes</option>
@@ -143,8 +142,8 @@ export default function ReporteManager({
 
         {/* Botones de descarga condicionales */}
         {hayDatosReales && (
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-            <button onClick={exportarExcel} style={{ ...estiloBotonDescargaPRO, backgroundColor: '#1d6f42', width: 'auto', padding: '10px 25px' }}>Excel 📗</button>
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+            <button onClick={exportarExcel} style={{ ...estiloBotonDescargaPRO, backgroundColor: '#1d6f42', width: 'auto', padding: '10px 25px', boxSizing: 'border-box' }}>Excel 📗</button>
             <PDFDownloadLink 
               document={
                 esProductos 
@@ -157,7 +156,7 @@ export default function ReporteManager({
               style={{ textDecoration: 'none' }}
             >
               {({ loading }) => (
-                <button style={{ ...estiloBotonDescargaPRO, width: 'auto', padding: '10px 25px' }}>{loading ? 'Preparando...' : 'PDF 📕'}</button>
+                <button style={{ ...estiloBotonDescargaPRO, width: 'auto', padding: '10px 25px', boxSizing: 'border-box' }}>{loading ? 'Preparando...' : 'PDF 📕'}</button>
               )}
             </PDFDownloadLink>
           </div>
@@ -166,8 +165,8 @@ export default function ReporteManager({
 
       {/* Tabla condicional: Solo se renderiza si hay datos reales */}
       {hayDatosReales ? (
-        <div style={{ overflowX: 'auto', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#fff' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+        <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#fff', boxSizing: 'border-box' }}>
+          <table style={{ width: '100%', minWidth: esProductos ? '800px' : '600px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
             <thead>
               <tr style={{ backgroundColor: '#1a1a1a', color: '#fff' }}>
                 <th style={estiloCeldaTh}>{esVentas ? 'Fecha' : esInventario ? 'Nombre' : 'ID'}</th>
@@ -197,7 +196,7 @@ export default function ReporteManager({
                       <td style={estiloCeldaTd}>{typeof item.fecha_creacion === 'string' ? item.fecha_creacion.substring(0, 10) : item.fecha_creacion}</td>
                       <td style={estiloCeldaTd}>{item.nombre_cliente}</td>
                       <td style={estiloCeldaTd}>{parsearProductosSeguro(item.detalle_productos)}</td>
-                      <td style={estiloCeldaTd}>
+                      <td style={{ ...estiloCeldaTd, whiteSpace: 'nowrap' }}>
                         <span style={{ padding: '2px 6px', borderRadius: '4px', background: item.estado === 'CONFIRMADA' ? '#e8f5e9' : '#fff3e0' }}>{item.estado}</span>
                       </td>
                       <td style={estiloCeldaTd}>₡{Number(item.monto_total || 0).toLocaleString()}</td>
@@ -226,7 +225,7 @@ export default function ReporteManager({
           </table>
         </div>
       ) : (
-        <div style={{ padding: '20px', textAlign: 'center', color: '#888', border: '1px dashed #ccc', borderRadius: '8px' }}>
+        <div style={{ padding: '20px', textAlign: 'center', color: '#888', border: '1px dashed #ccc', borderRadius: '8px', boxSizing: 'border-box' }}>
           Esperando resultados de la consulta...
         </div>
       )}

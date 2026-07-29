@@ -32,7 +32,6 @@ const GestionPedidos = ({ onPedidoConfirmado }) => {
       
       cargarPedidos(); 
       
-      // Se ejecuta el callback para notificar al panel que hubo un cambio
       if (onPedidoConfirmado) onPedidoConfirmado();
       
     } catch (error) {
@@ -44,43 +43,45 @@ const GestionPedidos = ({ onPedidoConfirmado }) => {
   if (cargando) return <p style={{ padding: '20px', textAlign: 'center' }}>Cargando pedidos pendientes...</p>;
 
   return (
-    <div style={{ overflowX: 'auto', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#fff' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-        <thead>
-          <tr style={{ backgroundColor: '#1a1a1a', color: '#fff' }}>
-            <th style={estiloTh}>Cliente</th>
-            <th style={estiloTh}>Detalle Productos</th>
-            <th style={estiloTh}>Total</th>
-            <th style={estiloTh}>Acción</th>
-          </tr>
-        </thead>
-        <tbody>
-          {pedidos.length > 0 ? pedidos.map((p) => (
-            <tr key={p.id_venta} style={{ borderBottom: '1px solid #eee' }}>
-              <td style={estiloTd}>{p.nombre_cliente} <br/> <small style={{color: '#666'}}>{p.email_cliente}</small></td>
-              <td style={estiloTd}>
-                {(() => {
-                  try {
-                    const carrito = typeof p.detalle_productos === 'string' 
+    <div style={{ width: '100%', boxSizing: 'border-box' }}>
+      <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#fff' }}>
+        <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <thead>
+            <tr style={{ backgroundColor: '#1a1a1a', color: '#fff' }}>
+              <th style={estiloTh}>Cliente</th>
+              <th style={estiloTh}>Detalle Productos</th>
+              <th style={estiloTh}>Total</th>
+              <th style={estiloTh}>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pedidos.length > 0 ? pedidos.map((p) => (
+              <tr key={p.id_venta} style={{ borderBottom: '1px solid #eee' }}>
+                <td style={estiloTd}>{p.nombre_cliente} <br/> <small style={{color: '#666'}}>{p.email_cliente}</small></td>
+                <td style={estiloTd}>
+                  {(() => {
+                    try {
+                      const carrito = typeof p.detalle_productos === 'string' 
                                     ? JSON.parse(p.detalle_productos) 
                                     : p.detalle_productos;
-                    return carrito.map(item => `${item.nombre} (x${item.cantidad})`).join(', ');
-                  } catch(e) { return "Error al leer productos"; }
-                })()}
-              </td>
-              <td style={estiloTd}>₡{Number(p.monto_total || 0).toLocaleString('es-CR')}</td>
-              <td style={estiloTd}>
-                <button 
-                  onClick={() => confirmarPedido(p.id_venta)}
-                  style={{ backgroundColor: '#2e7d32', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer' }}
-                >
-                  ✅ Confirmar
-                </button>
-              </td>
-            </tr>
-          )) : <tr><td colSpan="4" style={{ padding: '20px', textAlign: 'center' }}>No hay pedidos pendientes.</td></tr>}
-        </tbody>
-      </table>
+                      return carrito.map(item => `${item.nombre} (x${item.cantidad})`).join(', ');
+                    } catch(e) { return "Error al leer productos"; }
+                  })()}
+                </td>
+                <td style={estiloTd}>₡{Number(p.monto_total || 0).toLocaleString('es-CR')}</td>
+                <td style={{ ...estiloTd, whiteSpace: 'nowrap' }}>
+                  <button 
+                    onClick={() => confirmarPedido(p.id_venta)}
+                    style={{ backgroundColor: '#2e7d32', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                  >
+                    ✅ Confirmar
+                  </button>
+                </td>
+              </tr>
+            )) : <tr><td colSpan="4" style={{ padding: '20px', textAlign: 'center' }}>No hay pedidos pendientes.</td></tr>}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
