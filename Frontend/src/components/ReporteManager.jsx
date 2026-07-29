@@ -15,7 +15,6 @@ const styles = StyleSheet.create({
   textBody: { fontSize: 8, paddingLeft: 5 }
 });
 
-// 📄 PDF Detallado para Productos (Sin cambios)
 function ReporteProductosCompletoPDF({ productos }) {
   return (
     <Document>
@@ -44,7 +43,6 @@ function ReporteProductosCompletoPDF({ productos }) {
   );
 }
 
-// 📄 PDF Molde para Ventas (Sin cambios)
 function ReporteVentasPDF({ data, titulo }) {
   return (
     <Document>
@@ -97,7 +95,6 @@ export default function ReporteManager({
   const esProductos = seccionActivaReporte === 'productos';
   const esInventario = seccionActivaReporte === 'inventario';
   
-  // Normalización de datos
   const datosNormalizados = useMemo(() => {
     return (datosReporte || []).map(item => ({
       ...item,
@@ -127,7 +124,15 @@ export default function ReporteManager({
 
   return (
     <div style={{ width: '100%', boxSizing: 'border-box', marginTop: '20px' }}>
-      {/* Sección de Filtros siempre visible */}
+      <style>{`
+        .tabla-reportes-desktop { display: table; width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
+        .tarjetas-reportes-mobile { display: none; }
+        @media (max-width: 768px) {
+          .tabla-reportes-desktop { display: none !important; }
+          .tarjetas-reportes-mobile { display: flex !important; flex-direction: column; gap: 15px; }
+        }
+      `}</style>
+
       <div style={{ marginBottom: '15px', width: '100%', boxSizing: 'border-box' }}>
         {esVentas && (
           <div style={{ marginBottom: '10px', padding: '10px', background: '#f9f9f9', borderRadius: '5px', boxSizing: 'border-box' }}>
@@ -140,7 +145,6 @@ export default function ReporteManager({
           </div>
         )}
 
-        {/* Botones de descarga condicionales */}
         {hayDatosReales && (
           <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
             <button onClick={exportarExcel} style={{ ...estiloBotonDescargaPRO, backgroundColor: '#1d6f42', width: 'auto', padding: '10px 25px', boxSizing: 'border-box' }}>Excel 📗</button>
@@ -163,67 +167,131 @@ export default function ReporteManager({
         )}
       </div>
 
-      {/* Tabla condicional: Solo se renderiza si hay datos reales */}
       {hayDatosReales ? (
-        <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#fff', boxSizing: 'border-box' }}>
-          <table style={{ width: '100%', minWidth: esProductos ? '800px' : '600px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#1a1a1a', color: '#fff' }}>
-                <th style={estiloCeldaTh}>{esVentas ? 'Fecha' : esInventario ? 'Nombre' : 'ID'}</th>
-                <th style={estiloCeldaTh}>{esVentas ? 'Cliente' : esInventario ? 'Stock' : 'Código'}</th>
-                <th style={estiloCeldaTh}>{esVentas ? 'Productos' : esInventario ? 'Precio' : 'Nombre'}</th>
-                {esProductos ? (
+        <>
+          {/* Vista de Tarjetas para Celulares */}
+          <div className="tarjetas-reportes-mobile">
+            {datosFiltrados.map((item, i) => (
+              <div key={i} style={{ border: '1px solid #e0e0e0', borderRadius: '8px', padding: '15px', backgroundColor: '#fff', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', boxSizing: 'border-box' }}>
+                {esVentas ? (
                   <>
-                    <th style={estiloCeldaTh}>Descripción</th>
-                    <th style={estiloCeldaTh}>Precio</th>
-                    <th style={estiloCeldaTh}>Stock</th>
-                    <th style={estiloCeldaTh}>Material</th>
-                    <th style={estiloCeldaTh}>Tipo</th>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', borderBottom: '1px solid #eee', paddingBottom: '6px' }}>
+                      <span style={{ fontSize: '0.8rem', color: '#888' }}>{typeof item.fecha_creacion === 'string' ? item.fecha_creacion.substring(0, 10) : item.fecha_creacion}</span>
+                      <span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '0.75srem', fontWeight: 'bold', background: item.estado === 'CONFIRMADA' ? '#e8f5e9' : '#fff3e0', color: item.estado === 'CONFIRMADA' ? '#2e7d32' : '#e65100' }}>{item.estado}</span>
+                    </div>
+                    <div style={{ marginBottom: '8px' }}>
+                      <span style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', display: 'block' }}>Cliente</span>
+                      <strong style={{ fontSize: '0.95rem', color: '#1a1a1a' }}>{item.nombre_cliente}</strong>
+                    </div>
+                    <div style={{ marginBottom: '8px' }}>
+                      <span style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', display: 'block' }}>Productos</span>
+                      <span style={{ fontSize: '0.85rem', color: '#333' }}>{parsearProductosSeguro(item.detalle_productos)}</span>
+                    </div>
+                    <div style={{ textAlign: 'right', marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #eee' }}>
+                      <span style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', marginRight: '5px' }}>Total:</span>
+                      <strong style={{ fontSize: '1.1rem', color: '#2e7d32' }}>₡{Number(item.monto_total || 0).toLocaleString()}</strong>
+                    </div>
                   </>
-                ) : esVentas ? (
+                ) : esInventario ? (
                   <>
-                    <th style={estiloCeldaTh}>Estado</th>
-                    <th style={estiloCeldaTh}>Total</th>
+                    <div style={{ marginBottom: '8px' }}>
+                      <span style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', display: 'block' }}>Nombre</span>
+                      <strong style={{ fontSize: '0.95rem', color: '#1a1a1a' }}>{item.nombre}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #eee' }}>
+                      <div>
+                        <span style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', display: 'block' }}>Stock</span>
+                        <span style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{item.stock || 0} u.</span>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', display: 'block' }}>Precio</span>
+                        <strong style={{ fontSize: '1rem', color: '#2e7d32' }}>₡{Number(item.precio || 0).toLocaleString()}</strong>
+                      </div>
+                    </div>
                   </>
-                ) : null}
-              </tr>
-            </thead>
-            <tbody>
-              {datosFiltrados.map((item, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
-                  {esVentas ? (
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', borderBottom: '1px solid #eee', paddingBottom: '6px' }}>
+                      <span style={{ fontSize: '0.75rem', color: '#888' }}>ID: {item.id_producto}</span>
+                      <span style={{ fontSize: '0.75rem', color: '#b59410', fontWeight: 'bold' }}>{item.codigo || 'Sin código'}</span>
+                    </div>
+                    <div style={{ marginBottom: '8px' }}>
+                      <strong style={{ fontSize: '1rem', color: '#1a1a1a', display: 'block' }}>{item.nombre}</strong>
+                      <span style={{ fontSize: '0.8rem', color: '#666' }}>{item.descripcion || 'Sin descripción'}</span>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #eee', fontSize: '0.85rem' }}>
+                      <div><span style={{ color: '#888', display: 'block', fontSize: '0.7rem' }}>PRECIO</span> <strong>₡{Number(item.precio || 0).toLocaleString()}</strong></div>
+                      <div><span style={{ color: '#888', display: 'block', fontSize: '0.7rem' }}>STOCK</span> <strong>{item.stock || 0} u.</strong></div>
+                      <div><span style={{ color: '#888', display: 'block', fontSize: '0.7rem' }}>MATERIAL</span> <strong>{item.material || 'N/A'}</strong></div>
+                      <div><span style={{ color: '#888', display: 'block', fontSize: '0.7rem' }}>TIPO</span> <strong>{item.tipo_producto || 'N/A'}</strong></div>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Vista de Tabla Tradicional para Escritorio */}
+          <div className="tabla-reportes-desktop" style={{ border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#fff', overflow: 'hidden' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#1a1a1a', color: '#fff' }}>
+                  <th style={estiloCeldaTh}>{esVentas ? 'Fecha' : esInventario ? 'Nombre' : 'ID'}</th>
+                  <th style={estiloCeldaTh}>{esVentas ? 'Cliente' : esInventario ? 'Stock' : 'Código'}</th>
+                  <th style={estiloCeldaTh}>{esVentas ? 'Productos' : esInventario ? 'Precio' : 'Nombre'}</th>
+                  {esProductos ? (
                     <>
-                      <td style={estiloCeldaTd}>{typeof item.fecha_creacion === 'string' ? item.fecha_creacion.substring(0, 10) : item.fecha_creacion}</td>
-                      <td style={estiloCeldaTd}>{item.nombre_cliente}</td>
-                      <td style={estiloCeldaTd}>{parsearProductosSeguro(item.detalle_productos)}</td>
-                      <td style={{ ...estiloCeldaTd, whiteSpace: 'nowrap' }}>
-                        <span style={{ padding: '2px 6px', borderRadius: '4px', background: item.estado === 'CONFIRMADA' ? '#e8f5e9' : '#fff3e0' }}>{item.estado}</span>
-                      </td>
-                      <td style={estiloCeldaTd}>₡{Number(item.monto_total || 0).toLocaleString()}</td>
+                      <th style={estiloCeldaTh}>Descripción</th>
+                      <th style={estiloCeldaTh}>Precio</th>
+                      <th style={estiloCeldaTh}>Stock</th>
+                      <th style={estiloCeldaTh}>Material</th>
+                      <th style={estiloCeldaTh}>Tipo</th>
                     </>
-                  ) : esInventario ? (
+                  ) : esVentas ? (
                     <>
-                      <td style={estiloCeldaTd}>{item.nombre}</td>
-                      <td style={estiloCeldaTd}>{item.stock || 0}</td>
-                      <td style={estiloCeldaTd}>₡{Number(item.precio || 0).toLocaleString()}</td>
+                      <th style={estiloCeldaTh}>Estado</th>
+                      <th style={estiloCeldaTh}>Total</th>
                     </>
-                  ) : (
-                    <>
-                      <td style={estiloCeldaTd}>{item.id_producto}</td>
-                      <td style={estiloCeldaTd}>{item.codigo}</td>
-                      <td style={estiloCeldaTd}>{item.nombre}</td>
-                      <td style={estiloCeldaTd}>{item.descripcion || 'N/A'}</td>
-                      <td style={estiloCeldaTd}>₡{Number(item.precio || 0).toLocaleString()}</td>
-                      <td style={estiloCeldaTd}>{item.stock || 0} u.</td>
-                      <td style={estiloCeldaTd}>{item.material || 'N/A'}</td>
-                      <td style={estiloCeldaTd}>{item.tipo_producto || 'N/A'}</td>
-                    </>
-                  )}
+                  ) : null}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {datosFiltrados.map((item, i) => (
+                  <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
+                    {esVentas ? (
+                      <>
+                        <td style={estiloCeldaTd}>{typeof item.fecha_creacion === 'string' ? item.fecha_creacion.substring(0, 10) : item.fecha_creacion}</td>
+                        <td style={estiloCeldaTd}>{item.nombre_cliente}</td>
+                        <td style={estiloCeldaTd}>{parsearProductosSeguro(item.detalle_productos)}</td>
+                        <td style={estiloCeldaTd}>
+                          <span style={{ padding: '2px 6px', borderRadius: '4px', background: item.estado === 'CONFIRMADA' ? '#e8f5e9' : '#fff3e0' }}>{item.estado}</span>
+                        </td>
+                        <td style={estiloCeldaTd}>₡{Number(item.monto_total || 0).toLocaleString()}</td>
+                      </>
+                    ) : esInventario ? (
+                      <>
+                        <td style={estiloCeldaTd}>{item.nombre}</td>
+                        <td style={estiloCeldaTd}>{item.stock || 0}</td>
+                        <td style={estiloCeldaTd}>₡{Number(item.precio || 0).toLocaleString()}</td>
+                      </>
+                    ) : (
+                      <>
+                        <td style={estiloCeldaTd}>{item.id_producto}</td>
+                        <td style={estiloCeldaTd}>{item.codigo}</td>
+                        <td style={estiloCeldaTd}>{item.nombre}</td>
+                        <td style={estiloCeldaTd}>{item.descripcion || 'N/A'}</td>
+                        <td style={estiloCeldaTd}>₡{Number(item.precio || 0).toLocaleString()}</td>
+                        <td style={estiloCeldaTd}>{item.stock || 0} u.</td>
+                        <td style={estiloCeldaTd}>{item.material || 'N/A'}</td>
+                        <td style={estiloCeldaTd}>{item.tipo_producto || 'N/A'}</td>
+                      </>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       ) : (
         <div style={{ padding: '20px', textAlign: 'center', color: '#888', border: '1px dashed #ccc', borderRadius: '8px', boxSizing: 'border-box' }}>
           Esperando resultados de la consulta...
