@@ -9,13 +9,27 @@ function GestionInventario({ productos, materiales, tipos, cargarProductos, inic
   );
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px', gap: '15px', flexWrap: 'wrap' }}>
+    <div style={{ width: '100%', boxSizing: 'border-box' }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .inventario-top-bar {
+            flex-direction: column !important;
+            align-items: stretch !important;
+          }
+          .input-busqueda-responsive {
+            width: 100% !important;
+          }
+        }
+      `}</style>
+
+      {/* Barra superior de búsqueda y botón */}
+      <div className="inventario-top-bar" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px', gap: '15px', flexWrap: 'wrap' }}>
         <input 
           type="text" 
           placeholder="🔍 Buscar joya por nombre..." 
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
+          className="input-busqueda-responsive"
           style={estiloInputBusqueda}
         />
         <button onClick={iniciarCreacion} style={estiloBotonOro}>
@@ -23,8 +37,9 @@ function GestionInventario({ productos, materiales, tipos, cargarProductos, inic
         </button>
       </div>
 
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+      {/* Contenedor con scroll horizontal fluido para móviles */}
+      <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <table style={{ width: '100%', minWidth: '650px', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ backgroundColor: '#f8f9fa', borderBottom: '2px solid #eaeaea' }}>
               <th style={{ padding: '12px 15px' }}>Imagen</th>
@@ -61,7 +76,7 @@ function GestionInventario({ productos, materiales, tipos, cargarProductos, inic
                 </td>
 
                 <td style={{ padding: '12px 15px' }}>{prod.stock} unids</td>
-                <td style={{ padding: '12px 15px', textAlign: 'center' }}>
+                <td style={{ padding: '12px 15px', textAlign: 'center', whiteSpace: 'nowrap' }}>
                   <button onClick={() => iniciarEdicion(prod)} style={estiloBotonAccion}>✏️ Editar</button>
                   <button onClick={() => manejarEliminar(prod.id_producto, prod.nombre)} style={estiloBotonEliminar}>🗑️ Eliminar</button>
                 </td>
@@ -74,8 +89,8 @@ function GestionInventario({ productos, materiales, tipos, cargarProductos, inic
   );
 }
 
-const estiloInputBusqueda = { padding: '10px 15px', width: '320px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '0.95rem' };
-const estiloBotonOro = { backgroundColor: '#b59410', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '6px', fontWeight: '500', cursor: 'pointer' };
+const estiloInputBusqueda = { padding: '10px 15px', width: '320px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '0.95rem', boxSizing: 'border-box' };
+const estiloBotonOro = { backgroundColor: '#b59410', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '6px', fontWeight: '500', cursor: 'pointer', whiteSpace: 'nowrap' };
 const estiloBotonAccion = { backgroundColor: '#f0f0f0', color: '#333', border: 'none', padding: '6px 12px', borderRadius: '4px', marginRight: '8px', cursor: 'pointer', fontSize: '0.85rem' };
 const estiloBotonEliminar = { backgroundColor: '#fdf2f2', color: '#d32f2f', border: '1px solid #fde8e8', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' };
 
