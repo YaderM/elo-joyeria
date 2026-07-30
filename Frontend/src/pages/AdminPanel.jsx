@@ -184,6 +184,7 @@ function AdminPanel() {
             width: 100% !important;
             height: auto !important;
             position: relative !important;
+            z-index: 9999 !important;
           }
           .admin-mobile-header {
             display: flex !important;
@@ -200,16 +201,18 @@ function AdminPanel() {
             justify-content: flex-start;
             background-color: #1a1a1a;
             position: absolute;
-            top: 60px;
+            top: 100%;
             left: 0;
             width: 100%;
-            z-index: 9999;
+            z-index: 99999;
             padding-bottom: 30px;
             box-shadow: 0 15px 25px rgba(0,0,0,0.8);
           }
           .admin-content-area {
             padding: 15px !important;
             width: 100% !important;
+            position: relative;
+            z-index: 1;
           }
           .admin-header-seccion {
             flex-direction: column;
@@ -364,7 +367,7 @@ function AdminPanel() {
                   <div style={{ flex: 1 }}>
                     <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem' }}>Tipo de Joya</label>
                     <select value={formProducto.tipo_id} onChange={(e) => setFormProducto({...formProducto, tipo_id: e.target.value})} style={estiloInputForm}>
-                      <option value="">-- Seleccione --</option>
+                      <option value5="" value="">-- Seleccione --</option>
                       {tipos.map(t => <option key={t.id_tipo} value={t.id_tipo}>{t.nombre}</option>)}
                     </select>
                   </div>
