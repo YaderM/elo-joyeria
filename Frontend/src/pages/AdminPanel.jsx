@@ -173,6 +173,9 @@ function AdminPanel() {
   return (
     <>
       <style>{`
+        .btn-cerrar-mobile {
+          display: none;
+        }
         @media (max-width: 768px) {
           .admin-main-container {
             flex-direction: column !important;
@@ -194,15 +197,15 @@ function AdminPanel() {
           .admin-sidebar-content.open {
             display: flex !important;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: flex-start;
             background-color: #1a1a1a;
             position: absolute;
             top: 60px;
             left: 0;
             width: 100%;
-            z-index: 999;
-            padding-bottom: 20px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            z-index: 9999;
+            padding-bottom: 30px;
+            box-shadow: 0 15px 25px rgba(0,0,0,0.8);
           }
           .admin-content-area {
             padding: 15px !important;
@@ -211,7 +214,8 @@ function AdminPanel() {
           .admin-header-seccion {
             flex-direction: column;
             align-items: flex-start !important;
-            gap: 10px;
+            gap: 15px;
+            margin-top: 25px !important;
           }
           .reporte-filtros-fechas {
             flex-direction: column !important;
@@ -220,6 +224,20 @@ function AdminPanel() {
           .modal-formulario-filas {
             flex-direction: column !important;
             gap: 0 !important;
+          }
+          .btn-cerrar-desktop {
+            display: none !important;
+          }
+          .btn-cerrar-mobile {
+            display: block !important;
+            background-color: #333;
+            color: #ec5b5b;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.8rem;
           }
         }
       `}</style>
@@ -233,19 +251,27 @@ function AdminPanel() {
               <h3 style={{ color: '#d4af37', fontSize: '1.1rem', fontWeight: '400', letterSpacing: '1.5px', margin: '0' }}>ELO CONTROL</h3>
               <p style={{ color: '#888', fontSize: '0.7rem', margin: 0, textTransform: 'uppercase' }}>Administrador</p>
             </div>
-            <button onClick={() => setMenuAbierto(!menuAbierto)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.8rem', cursor: 'pointer', padding: '0 5px' }}>
-              {menuAbierto ? '✕' : '☰'}
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <button 
+                onClick={() => { localStorage.removeItem('adminToken'); navigate('/login'); }} 
+                className="btn-cerrar-mobile"
+              >
+                🚪 Salir
+              </button>
+              <button onClick={() => setMenuAbierto(!menuAbierto)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.8rem', cursor: 'pointer', padding: '0 5px' }}>
+                {menuAbierto ? '✕' : '☰'}
+              </button>
+            </div>
           </div>
 
-          {/* Opciones del Menú (En PC siempre visible, en Celular se despliega con la hamburguesa) */}
+          {/* Opciones del Menú */}
           <div className={`admin-sidebar-content ${menuAbierto ? 'open' : ''}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
             <div>
               <div style={estiloBrand} className="desktop-brand">
                 <h3 style={{ color: '#d4af37', fontSize: '1.2rem', fontWeight: '400', letterSpacing: '1.5px', margin: '0 0 5px 0' }}>ELO CONTROL</h3>
                 <p style={{ color: '#888', fontSize: '0.75rem', margin: 0, textTransform: 'uppercase' }}>Administrador</p>
               </div>
-              <nav style={{ marginTop: '20px' }}>
+              <nav style={{ marginTop: '10px' }}>
                 <button onClick={() => { setSeccionActiva('inventario'); setMenuAbierto(false); }} style={seccionActiva === 'inventario' ? estiloBotonActivo : estiloBotonSidebar}>📦 Gestión de Inventario</button>
                 <button onClick={() => { setSeccionActiva('categorias'); setMenuAbierto(false); }} style={seccionActiva === 'categorias' ? estiloBotonActivo : estiloBotonSidebar}>🗂️ Categorías y Tipos</button>
                 <button onClick={() => { setSeccionActiva('promociones'); setMenuAbierto(false); }} style={seccionActiva === 'promociones' ? estiloBotonActivo : estiloBotonSidebar}>🏷️ Precios y Ofertas</button>
@@ -253,13 +279,13 @@ function AdminPanel() {
                 <button onClick={() => { setSeccionActiva('reportes'); setMenuAbierto(false); }} style={seccionActiva === 'reportes' ? estiloBotonActivo : estiloBotonSidebar}>📊 Reportes PDF</button>
               </nav>
             </div>
-            <div style={{ padding: '20px 20px 0 20px' }}>
+            <div style={{ padding: '20px 20px 0 20px' }} className="btn-cerrar-desktop">
               <button onClick={() => { localStorage.removeItem('adminToken'); navigate('/login'); }} style={estiloBotonCerrar}>🚪 Cerrar Sesión</button>
             </div>
           </div>
         </aside>
 
-        {/* CONTENIDO PRINCIPAL (Ocupa toda la pantalla cuando el menú se oculta en móviles) */}
+        {/* CONTENIDO PRINCIPAL */}
         <main className="admin-content-area" style={{ flexGrow: 1, padding: '40px', overflowY: 'auto', minWidth: 0, boxSizing: 'border-box' }}>
           <div className="admin-header-seccion" style={estiloHeaderSeccion}>
             <h2 style={{ fontSize: '1.6rem', fontWeight: '400', color: '#222', textTransform: 'uppercase', margin: 0 }}>

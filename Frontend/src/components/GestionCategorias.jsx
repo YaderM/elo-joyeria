@@ -32,17 +32,34 @@ function GestionCategorias({ materiales, tipos, cargarAuxiliares }) {
   };
 
   return (
-    <div style={{ width: '100%', boxSizing: 'border-box' }}>
+    <div style={{ width: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
       <style>{`
         .grid-categorias {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 40px;
         }
+        .form-categoria-mobile {
+          display: flex;
+          gap: 10px;
+          margin-bottom: 20px;
+          flex-wrap: wrap;
+          width: 100%;
+          box-sizing: border-box;
+        }
         @media (max-width: 768px) {
           .grid-categorias {
             grid-template-columns: 1fr !important;
             gap: 25px !important;
+          }
+          .form-categoria-mobile {
+            flex-direction: column !important;
+            align-items: stretch !important;
+          }
+          .form-categoria-mobile input,
+          .form-categoria-mobile button {
+            width: 100% !important;
+            flex: none !important;
           }
         }
       `}</style>
@@ -50,9 +67,9 @@ function GestionCategorias({ materiales, tipos, cargarAuxiliares }) {
       <div className="grid-categorias">
         
         {/* SECCIÓN MATERIALES */}
-        <div>
+        <div style={{ width: '100%', boxSizing: 'border-box', minWidth: 0 }}>
           <h3 style={estiloSubtitulo}>✨ Materiales Disponibles</h3>
-          <form onSubmit={guardarMaterial} style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+          <form onSubmit={guardarMaterial} className="form-categoria-mobile">
             <input type="text" required placeholder="Ej: Oro Rosa" value={nuevoMaterial.nombre} onChange={(e) => setNuevoMaterial({...nuevoMaterial, nombre: e.target.value})} style={estiloInputForm} />
             <input type="text" placeholder="Descripción" value={nuevoMaterial.descripcion} onChange={(e) => setNuevoMaterial({...nuevoMaterial, descripcion: e.target.value})} style={estiloInputForm} />
             <button type="submit" style={estiloBotonNegro}>Añadir</button>
@@ -81,9 +98,9 @@ function GestionCategorias({ materiales, tipos, cargarAuxiliares }) {
         </div>
 
         {/* SECCIÓN TIPOS */}
-        <div>
+        <div style={{ width: '100%', boxSizing: 'border-box', minWidth: 0 }}>
           <h3 style={estiloSubtitulo}>📿 Tipos de Producto</h3>
-          <form onSubmit={guardarTipo} style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+          <form onSubmit={guardarTipo} className="form-categoria-mobile">
             <input type="text" required placeholder="Ej: Pulseras" value={nuevoTipo.nombre} onChange={(e) => setNuevoTipo({ nombre: e.target.value })} style={estiloInputForm} />
             <button type="submit" style={estiloBotonNegro}>Añadir</button>
           </form>
