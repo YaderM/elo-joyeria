@@ -2,6 +2,15 @@ import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Swal from 'sweetalert2';
+
+// Configuración base para que todos los alerts mantengan tu estilo de marca
+const swalStyled = Swal.mixin({
+  background: '#161616',
+  color: '#fff',
+  confirmButtonColor: '#b59410',
+  cancelButtonColor: '#333',
+});
 
 function Checkout() {
   const { cart, getCartTotal, clearCart, removeFromCart } = useCart();
@@ -16,14 +25,9 @@ function Checkout() {
     if (e.target.name === 'comprobante') {
       const archivoOriginal = e.target.files[0];
       if (archivoOriginal) {
-        // Obtenemos la extensión original (ej: .jpg, .png, .jpeg)
         const extension = archivoOriginal.name.split('.').pop() || 'jpg';
-        // Creamos un nombre limpio y seguro sin espacios ni caracteres especiales
         const nombreLimpio = `comprobante_${Date.now()}.${extension}`;
-        
-        // Creamos un nuevo objeto File con el nombre limpio pero conservando los datos binarios intactos
         const archivoRenombrado = new File([archivoOriginal], nombreLimpio, { type: archivoOriginal.type });
-        
         setFormData({ ...formData, comprobante: archivoRenombrado });
       }
     } else {
@@ -31,8 +35,17 @@ function Checkout() {
     }
   };
 
-  const handleEliminarItem = (id, nombreProducto) => {
-    if (window.confirm(`¿Estás seguro quieres eliminar este producto (${nombreProducto})?`)) {
+  const handleEliminarItem = async (id, nombreProducto) => {
+    const result = await swalStyled.fire({
+      title: '¿Eliminar producto?',
+      text: `Vas a quitar "${nombreProducto}" del carrito`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (result.isConfirmed) {
       removeFromCart(id);
     }
   };
@@ -40,20 +53,23 @@ function Checkout() {
   const handleFinalizar = async (e) => {
     e.preventDefault();
     if (!formData.comprobante) {
-        alert("Por favor selecciona un comprobante de pago.");
-        return;
+      swalStyled.fire({
+        title: 'Falta el comprobante',
+        text: 'Por favor selecciona un comprobante de pago.',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+      });
+      return;
     }
-    
+
     setCargando(true);
-    
+
     try {
-      // 1. Subir imagen a ImgBB
       const imageData = new FormData();
       imageData.append('image', formData.comprobante);
       const resImg = await axios.post(`https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_API_KEY}`, imageData);
       const comprobanteUrl = resImg.data.data.url;
 
-      // 2. Registrar en la base de datos (Backend con URL fija) - El backend se encarga de enviar el correo con Nodemailer automáticamente
       await axios.post('https://elo-joyeria-backend.vercel.app/api/ventas', {
         cliente: { nombre: formData.nombre, email: formData.email },
         carrito: cart,
@@ -61,19 +77,27 @@ function Checkout() {
         comprobante_sinpe: comprobanteUrl
       });
 
-      // 3. Preparar datos para comunicación
       const listaProductos = cart.map(i => `${i.nombre} (x${i.cantidad})`).join(', ');
-
-      // 4. Disparador WhatsApp
       const mensajeWA = `Hola Elo Joyería, nuevo pedido de: ${formData.nombre}. Total: ₡${total}. Productos: ${listaProductos}. Comprobante: ${comprobanteUrl}`;
       window.open(`https://wa.me/50661130448?text=${encodeURIComponent(mensajeWA)}`, '_blank');
 
-      alert('¡Pedido enviado con éxito!');
+      await swalStyled.fire({
+        title: '¡Pedido enviado con éxito!',
+        text: 'Te contactaremos pronto para confirmar tu compra.',
+        icon: 'success',
+        confirmButtonText: 'Perfecto',
+      });
+
       clearCart();
       navigate('/');
     } catch (error) {
       console.error("Error en proceso:", error);
-      alert('Hubo un error al procesar tu pedido. Por favor intenta de nuevo.');
+      swalStyled.fire({
+        title: 'Ocurrió un error',
+        text: 'Hubo un error al procesar tu pedido. Por favor intenta de nuevo.',
+        icon: 'error',
+        confirmButtonText: 'Cerrar',
+      });
     } finally {
       setCargando(false);
     }
@@ -111,13 +135,11 @@ function Checkout() {
           <input name="telefono" placeholder="Teléfono" required onChange={handleChange} style={estiloInput} />
           <input name="email" type="email" placeholder="Email" required onChange={handleChange} style={estiloInput} />
           <textarea name="direccion" placeholder="Dirección" required onChange={handleChange} style={estiloInput} />
-          
-          {/* Etiqueta agregada con el número de teléfono para SINPE */}
+
           <div style={{background: '#222', border: '1px dashed #b59410', padding: '10px 15px', borderRadius: '6px', marginBottom: '10px', fontSize: '0.9rem', color: '#ddd'}}>
             📱 Realizar pago SINPE Móvil al: <strong style={{color: '#b59410'}}>61130448</strong>
           </div>
 
-          {/* Input de archivo personalizado con texto claro */}
           <div style={{ margin: '15px 0' }}>
             <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: '#b59410', fontWeight: 'bold' }}>
               Comprobante de pago SINPE:
