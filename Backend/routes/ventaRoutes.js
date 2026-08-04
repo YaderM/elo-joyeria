@@ -2,8 +2,12 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db'); // Necesario para las consultas directas
 const { procesarVenta } = require('../controllers/ventaController'); 
+const { Resend } = require('resend');
 
-// RUTA ORIGINAL DE VENTAS CON INTERCEPTOR DE CORREO AUTOMÁTICO (EMAILJS)
+// Inicializar Resend usando la variable de entorno
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// RUTA ORIGINAL DE VENTAS CON INTERCEPTOR DE CORREO AUTOMÁTICO (RESEND)
 router.post('/', async (req, res) => {
     const datosVenta = req.body;
     let ventaExitosa = false;
@@ -25,40 +29,38 @@ router.post('/', async (req, res) => {
     // Ejecuta tu lógica intacta
     await procesarVenta(req, resInterceptor);
 
-    // Si la venta se registró con éxito, enviamos el correo usando EmailJS sin afectar al cliente
+    // Si la venta se registró con éxito, enviamos el correo usando Resend sin afectar al cliente
     if (ventaExitosa && datosVenta.cliente) {
         try {
             // Formateamos el carrito limpiamente sin etiquetas repetidas
-            const productosTexto = datosVenta.carrito ? datosVenta.carrito.map(item => 
-                `${item.nombre} - Cantidad: ${item.cantidad} - Precio: ₡${item.precio}`
-            ).join('\n') : '';
+            const productosHtml = datosVenta.carrito ? datosVenta.carrito.map(item => 
+                `<li>${item.nombre} - Cantidad: ${item.cantidad} - Precio: ₡${item.precio}</li>`
+            ).join('') : '';
 
-            const emailResponse = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    service_id: 'service_0xlqzaq',
-                    template_id: 'template_0cflqo3',
-                    user_id: 'ombe2_2NkrxCxincc',
-                    template_params: {
-                        to_name: datosVenta.cliente.nombre,
-                        cliente_nombre: datosVenta.cliente.nombre,
-                        cliente_email: datosVenta.cliente.email,
-                        total: datosVenta.total,
-                        productos: productosTexto,
-                        comprobante: datosVenta.comprobante_sinpe || 'No adjunto'
-                    }
-                })
+            const nombreCliente = datosVenta.cliente.nombre;
+            const emailCliente = datosVenta.cliente.email;
+            const totalVenta = datosVenta.total;
+            const comprobanteSinpe = datosVenta.comprobante_sinpe || 'No adjunto';
+
+            const contenidoHtml = `
+                <h2>¡Gracias por tu compra, ${nombreCliente}!</h2>
+                <p>Hemos recibido tu solicitud de pedido. Detalles:</p>
+                <ul>
+                    ${productosHtml}
+                </ul>
+                <p><strong>Total: ₡${totalVenta}</strong></p>
+                <p>Comprobante adjunto: ${comprobanteSinpe}</p>
+                <p>El pedido quedará en estado PENDIENTE hasta que sea verificado. Los envíos tardan de 3 a 5 días.</p>
+            `;
+
+            await resend.emails.send({
+                from: 'Elo Joyería <info.joyeriaelo@gmail.com>', // O el correo remitente verificado en tu cuenta de Resend
+                to: [emailCliente, 'info.joyeriaelo@gmail.com'],
+                subject: 'Nueva solicitud de pedido - Elo Joyería',
+                html: contenidoHtml
             });
 
-            if (!emailResponse.ok) {
-                const errorText = await emailResponse.text();
-                throw new Error(errorText || 'Error en la respuesta de EmailJS');
-            }
-
-            console.log('✅ Correo de notificación enviado exitosamente desde el backend via EmailJS.');
+            console.log('✅ Correo de notificación enviado exitosamente desde el backend vía Resend.');
         } catch (emailError) {
             console.error('⚠️ La venta se guardó pero falló el envío del correo:', emailError.message);
         }
@@ -134,37 +136,25 @@ router.get('/ventas_pendientes', async (req, res) => {
     }
 });
 
-// 📧 RUTA DE PRUEBA: Envía correo desde el backend usando fetch nativo para evitar dependencias
+// 📧 RUTA DE PRUEBA: Envía correo desde el backend usando Resend
 router.post('/enviar-correo-prueba', async (req, res) => {
     const { cliente_nombre, cliente_email, monto_total, productos, comprobante } = req.body;
 
     try {
-        const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                service_id: 'service_0xlqzaq',
-                template_id: 'template_0cflqo3',
-                user_id: 'ombe2_2NkrxCxincc',
-                template_params: {
-                    to_name: cliente_nombre || "Elo Joyería",
-                    cliente_nombre: cliente_nombre,
-                    cliente_email: cliente_email,
-                    total: monto_total,
-                    productos: productos,
-                    comprobante: comprobante
-                }
-            })
+        const data = await resend.emails.send({
+            from: 'Elo Joyería <info.joyeriaelo@gmail.com>',
+            to: [cliente_email || 'info.joyeriaelo@gmail.com', 'info.joyeriaelo@gmail.com'],
+            subject: 'Prueba de Sistema - Elo Joyería',
+            html: `
+                <h3>Hola ${cliente_nombre || "Elo Joyería"}</h3>
+                <p>Prueba de correo exitosa usando Resend.</p>
+                <p><strong>Total:</strong> ₡${monto_total || '0'}</p>
+                <p><strong>Productos:</strong> ${productos || 'Ninguno'}</p>
+                <p><strong>Comprobante:</strong> ${comprobante || 'No adjunto'}</p>
+            `
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || 'Error en la respuesta de EmailJS');
-        }
-
-        res.status(200).json({ success: true, mensaje: 'Correo enviado correctamente desde el backend' });
+        res.status(200).json({ success: true, mensaje: 'Correo enviado correctamente desde el backend con Resend', data });
     } catch (error) {
         console.error('Error enviando correo desde backend:', error.message);
         res.status(500).json({ error: 'No se pudo enviar el correo', details: error.message });
