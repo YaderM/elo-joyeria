@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import Swal from 'sweetalert2';
+
+// Configuración base para mantener el estilo de marca en todos los alerts
+const swalStyled = Swal.mixin({
+  confirmButtonColor: '#b59410',
+  cancelButtonColor: '#333',
+});
 
 function GestionPromociones({ productos, cargarProductos }) {
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
@@ -41,7 +48,12 @@ function GestionPromociones({ productos, cargarProductos }) {
         fecha_fin_oferta: fechaFormateada
       });
 
-      alert(respuesta.data.mensaje || '¡Precio de oferta actualizado con éxito!');
+      swalStyled.fire({
+        title: '¡Actualizado!',
+        text: respuesta.data.mensaje || 'Precio de oferta actualizado con éxito.',
+        icon: 'success',
+        confirmButtonText: 'Listo',
+      });
       
       setProductoSeleccionado(null);
       setDescuento(0);
@@ -53,7 +65,12 @@ function GestionPromociones({ productos, cargarProductos }) {
       
     } catch (error) {
       console.error("Error al aplicar la promoción:", error);
-      alert('Error al guardar la oferta. Verifica tu conexión.');
+      swalStyled.fire({
+        title: 'Error',
+        text: 'Error al guardar la oferta. Verifica tu conexión.',
+        icon: 'error',
+        confirmButtonText: 'Cerrar',
+      });
     }
   };
 

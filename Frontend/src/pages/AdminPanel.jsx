@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
 // Componentes modulares
 import GestionInventario from '../components/GestionInventario';
@@ -9,33 +10,34 @@ import GestionPromociones from '../components/GestionPromociones';
 import GestionPedidos from '../components/GestionPedidos';
 import ReporteManager from '../components/ReporteManager'; 
 
+// Configuración base para mantener el estilo de marca en todos los alerts
+const swalStyled = Swal.mixin({
+  confirmButtonColor: '#b59410',
+  cancelButtonColor: '#333',
+});
+
 function AdminPanel() {
   const navigate = useNavigate();
   const [seccionActiva, setSeccionActiva] = useState('inventario');
   
-  // Estado para controlar el menú hamburguesa en dispositivos móviles
   const [menuAbierto, setMenuAbierto] = useState(false);
   
   const API_URL = 'https://elo-joyeria-backend.vercel.app/api';
 
-  // Configuración de cabecera con el token
   const getConfig = () => ({
     headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
   });
 
-  // Estados originales de datos
   const [productos, setProductos] = useState([]);
   const [materiales, setMateriales] = useState([]);
   const [tipos, setTipos] = useState([]);
   const [cargando, setCargando] = useState(true);
 
-  // Estados de Reportes
   const [seccionActivaReporte, setSeccionActivaReporte] = useState('inventario');
   const [datosReporte, setDatosReporte] = useState([]);
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
 
-  // Estados del Modal
   const [mostrarModal, setMostrarModal] = useState(false);
   const [editandoId, setEditandoId] = useState(null);
   const [formProducto, setFormProducto] = useState({
@@ -95,7 +97,12 @@ function AdminPanel() {
 
   const procesarFiltroFechasVentas = async () => {
     if (!fechaInicio || !fechaFin) {
-      alert('Por favor selecciona ambas fechas.');
+      swalStyled.fire({
+        title: 'Faltan fechas',
+        text: 'Por favor selecciona ambas fechas.',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+      });
       return;
     }
     try {
@@ -108,7 +115,12 @@ function AdminPanel() {
     } catch (error) {
       console.error("Error al filtrar ventas:", error);
       setDatosReporte([]);
-      alert('Error al obtener los datos de la base de datos.');
+      swalStyled.fire({
+        title: 'Error',
+        text: 'Error al obtener los datos de la base de datos.',
+        icon: 'error',
+        confirmButtonText: 'Cerrar',
+      });
     }
   };
 
@@ -145,24 +157,50 @@ function AdminPanel() {
 
       if (editandoId) {
         await axios.put(`${API_URL}/productos/${editandoId}`, datosAEnviar, getConfig());
-        alert('¡Joya actualizada con éxito!');
+        swalStyled.fire({
+          title: '¡Joya actualizada con éxito!',
+          icon: 'success',
+          confirmButtonText: 'Listo',
+        });
       } else {
         await axios.post(`${API_URL}/productos`, datosAEnviar, getConfig());
-        alert('¡Producto agregado con éxito!');
+        swalStyled.fire({
+          title: '¡Producto agregado con éxito!',
+          icon: 'success',
+          confirmButtonText: 'Listo',
+        });
       }
       setMostrarModal(false);
       cargarProductos();
     } catch (error) {
       console.error("Error al guardar producto:", error);
-      alert('Hubo un error al guardar el producto.');
+      swalStyled.fire({
+        title: 'Error',
+        text: 'Hubo un error al guardar el producto.',
+        icon: 'error',
+        confirmButtonText: 'Cerrar',
+      });
     }
   };
 
   const manejarEliminar = async (id, nombre) => {
-    if (window.confirm(`¿Estás seguro de eliminar "${nombre}"?`)) {
+    const result = await swalStyled.fire({
+      title: '¿Eliminar producto?',
+      text: `¿Estás seguro de eliminar "${nombre}"?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (result.isConfirmed) {
       try {
         await axios.delete(`${API_URL}/productos/${id}`, getConfig());
-        alert('Producto eliminado.');
+        swalStyled.fire({
+          title: 'Producto eliminado.',
+          icon: 'success',
+          confirmButtonText: 'Listo',
+        });
         cargarProductos();
       } catch (error) {
         console.error(error);
@@ -242,9 +280,7 @@ function AdminPanel() {
       `}</style>
       <div className="admin-main-container" style={{ display: 'flex', minHeight: '90vh', backgroundColor: '#f4f6f8', margin: 0, position: 'relative' }}>
         
-        {/* SIDEBAR */}
         <aside className="admin-sidebar" style={estiloSidebar}>
-          {/* Cabecera Móvil Hamburguesa (Solo se muestra en celular) */}
           <div className="admin-mobile-header" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', padding: '15px 20px', backgroundColor: '#1a1a1a', width: '100%', boxSizing: 'border-box' }}>
             <div>
               <h3 style={{ color: '#d4af37', fontSize: '1.1rem', fontWeight: '400', letterSpacing: '1.5px', margin: '0' }}>ELO CONTROL</h3>
@@ -263,7 +299,6 @@ function AdminPanel() {
             </div>
           </div>
 
-          {/* Opciones del Menú */}
           <div className={`admin-sidebar-content ${menuAbierto ? 'open' : ''}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
             <div>
               <div style={estiloBrand} className="desktop-brand">
@@ -284,7 +319,6 @@ function AdminPanel() {
           </div>
         </aside>
 
-        {/* CONTENIDO PRINCIPAL */}
         <main className="admin-content-area" style={{ flexGrow: 1, padding: '40px', overflowY: 'auto', minWidth: 0, boxSizing: 'border-box' }}>
           <div className="admin-header-seccion" style={estiloHeaderSeccion}>
             <h2 style={{ fontSize: '1.6rem', fontWeight: '400', color: '#222', textTransform: 'uppercase', margin: 0 }}>

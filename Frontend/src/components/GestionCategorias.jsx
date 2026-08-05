@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import Swal from 'sweetalert2';
+
+// Configuración base para mantener el estilo de marca en todos los alerts
+const swalStyled = Swal.mixin({
+  confirmButtonColor: '#b59410',
+  cancelButtonColor: '#333',
+});
 
 function GestionCategorias({ materiales, tipos, cargarAuxiliares }) {
   const [nuevoMaterial, setNuevoMaterial] = useState({ nombre: '', descripcion: '' });
@@ -9,12 +16,22 @@ function GestionCategorias({ materiales, tipos, cargarAuxiliares }) {
     e.preventDefault();
     try {
       const respuesta = await axios.post('https://elo-joyeria-backend.vercel.app/api/productos/aux/materiales', nuevoMaterial);
-      alert(respuesta.data.mensaje || '¡Nuevo material registrado!');
+      swalStyled.fire({
+        title: '¡Material registrado!',
+        text: respuesta.data.mensaje || 'Nuevo material registrado con éxito.',
+        icon: 'success',
+        confirmButtonText: 'Listo',
+      });
       setNuevoMaterial({ nombre: '', descripcion: '' });
       cargarAuxiliares();
     } catch (error) {
       console.error(error);
-      alert('Hubo un error al crear el material.');
+      swalStyled.fire({
+        title: 'Error',
+        text: 'Hubo un error al crear el material.',
+        icon: 'error',
+        confirmButtonText: 'Cerrar',
+      });
     }
   };
 
@@ -22,12 +39,22 @@ function GestionCategorias({ materiales, tipos, cargarAuxiliares }) {
     e.preventDefault();
     try {
       const respuesta = await axios.post('https://elo-joyeria-backend.vercel.app/api/productos/aux/tipos', nuevoTipo);
-      alert(respuesta.data.mensaje || '¡Nuevo tipo registrado!');
+      swalStyled.fire({
+        title: '¡Tipo registrado!',
+        text: respuesta.data.mensaje || 'Nuevo tipo registrado con éxito.',
+        icon: 'success',
+        confirmButtonText: 'Listo',
+      });
       setNuevoTipo({ nombre: '' });
       cargarAuxiliares();
     } catch (error) {
       console.error(error);
-      alert('Hubo un error al crear el tipo.');
+      swalStyled.fire({
+        title: 'Error',
+        text: 'Hubo un error al crear el tipo.',
+        icon: 'error',
+        confirmButtonText: 'Cerrar',
+      });
     }
   };
 

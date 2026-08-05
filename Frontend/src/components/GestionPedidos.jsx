@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Swal from 'sweetalert2';
+
+// Configuración base para mantener el estilo de marca en todos los alerts
+const swalStyled = Swal.mixin({
+  confirmButtonColor: '#b59410',
+  cancelButtonColor: '#333',
+});
 
 const GestionPedidos = ({ onPedidoConfirmado }) => {
   const [pedidos, setPedidos] = useState([]);
@@ -24,19 +31,38 @@ const GestionPedidos = ({ onPedidoConfirmado }) => {
   };
 
   const confirmarPedido = async (idVenta) => {
-    if (!window.confirm("¿Confirmar este pedido y rebajar el stock?")) return;
-    
+    const result = await swalStyled.fire({
+      title: '¿Confirmar pedido?',
+      text: '¿Confirmar este pedido y rebajar el stock?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, confirmar',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (!result.isConfirmed) return;
+
     try {
       await axios.put(`${API_URL}/ventas/pendientes/${idVenta}/aprobar`, {}, getConfig());
-      alert("Pedido aprobado y stock actualizado.");
-      
-      cargarPedidos(); 
-      
+      swalStyled.fire({
+        title: 'Pedido aprobado',
+        text: 'Stock actualizado correctamente.',
+        icon: 'success',
+        confirmButtonText: 'Listo',
+      });
+
+      cargarPedidos();
+
       if (onPedidoConfirmado) onPedidoConfirmado();
-      
+
     } catch (error) {
       console.error("Error al confirmar:", error);
-      alert("Error al procesar la aprobación.");
+      swalStyled.fire({
+        title: 'Error',
+        text: 'Error al procesar la aprobación.',
+        icon: 'error',
+        confirmButtonText: 'Cerrar',
+      });
     }
   };
 
