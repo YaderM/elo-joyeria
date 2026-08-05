@@ -85,6 +85,8 @@ router.put('/pendientes/:id/aprobar', async (req, res) => {
         connection = await db.getConnection();
         await connection.beginTransaction();
 
+        const { tracking_correos } = req.body;
+
         const [pedidos] = await connection.query('SELECT * FROM ventas_pendientes WHERE id_venta = ?', [req.params.id]);
         if (pedidos.length === 0) throw new Error('Pedido no encontrado');
         
@@ -95,7 +97,11 @@ router.put('/pendientes/:id/aprobar', async (req, res) => {
             await connection.query('UPDATE productos SET stock = stock - ? WHERE id_producto = ?', [item.cantidad, item.id_producto]);
         }
 
-        await connection.query("UPDATE ventas_pendientes SET estado = 'CONFIRMADA' WHERE id_venta = ?", [req.params.id]);
+        await connection.query(
+            "UPDATE ventas_pendientes SET estado = 'CONFIRMADA', tracking_correos = ? WHERE id_venta = ?", 
+            [tracking_correos || null, req.params.id]
+        );
+        
         await connection.commit();
         res.status(200).json({ success: true, mensaje: 'Pedido confirmado' });
     } catch (error) {

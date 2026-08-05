@@ -15,10 +15,14 @@ const swalStyled = Swal.mixin({
 function Checkout() {
   const { cart, getCartTotal, clearCart, removeFromCart } = useCart();
   const navigate = useNavigate();
-  const total = getCartTotal();
+  const subtotal = getCartTotal();
 
   const [paso, setPaso] = useState('RESUMEN');
   const [cargando, setCargando] = useState(false);
+  const [tipoEntrega, setTipoEntrega] = useState('ENVIO'); // 'ENVIO' o 'FISICA'
+  const costoEnvio = tipoEntrega === 'ENVIO' ? 2500 : 0;
+  const totalFinal = subtotal + costoEnvio;
+
   const [formData, setFormData] = useState({ nombre: '', telefono: '', direccion: '', email: '', notas: '', comprobante: null });
 
   const handleChange = (e) => {
@@ -73,12 +77,16 @@ function Checkout() {
       await axios.post('https://elo-joyeria-backend.vercel.app/api/ventas', {
         cliente: { nombre: formData.nombre, email: formData.email },
         carrito: cart,
-        total: total,
-        comprobante_sinpe: comprobanteUrl
+        total: totalFinal,
+        comprobante_sinpe: comprobanteUrl,
+        tipo_entrega: tipoEntrega,
+        costo_envio: costoEnvio,
+        telefono_cliente: formData.telefono
       });
 
       const listaProductos = cart.map(i => `${i.nombre} (x${i.cantidad})`).join(', ');
-      const mensajeWA = `Hola Elo Joyería, nuevo pedido de: ${formData.nombre}. Total: ₡${total}. Productos: ${listaProductos}. Comprobante: ${comprobanteUrl}`;
+      const tipoEntregaTexto = tipoEntrega === 'ENVIO' ? 'Envío por Correos de Costa Rica' : 'Compra Física / Retiro en Tienda';
+      const mensajeWA = `Hola Elo Joyería, nuevo pedido de: ${formData.nombre}. Tipo: ${tipoEntregaTexto}. Subtotal: ₡${subtotal}. Envío: ₡${costoEnvio}. Total: ₡${totalFinal}. Productos: ${listaProductos}. Comprobante: ${comprobanteUrl}`;
       window.open(`https://wa.me/50661130448?text=${encodeURIComponent(mensajeWA)}`, '_blank');
 
       await swalStyled.fire({
@@ -125,7 +133,38 @@ function Checkout() {
               </div>
             </div>
           ))}
-          <div style={{...estiloItem, fontWeight: 'bold', fontSize: '1.2rem'}}><span>TOTAL</span> <span>₡{total}</span></div>
+
+          <div style={{ margin: '20px 0', padding: '15px', background: '#222', borderRadius: '8px', border: '1px solid #333' }}>
+            <label style={{display: 'block', marginBottom: '10px', color: '#b59410', fontWeight: 'bold'}}>Seleccione el tipo de entrega:</label>
+            <div style={{display: 'flex', gap: '20px'}}>
+              <label style={{cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                <input 
+                  type="radio" 
+                  name="tipoEntrega" 
+                  checked={tipoEntrega === 'ENVIO'} 
+                  onChange={() => setTipoEntrega('ENVIO')} 
+                />
+                Compra en línea (Envío Correos de Costa Rica +₡2,500)
+              </label>
+              <label style={{cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                <input 
+                  type="radio" 
+                  name="tipoEntrega" 
+                  checked={tipoEntrega === 'FISICA'} 
+                  onChange={() => setTipoEntrega('FISICA')} 
+                />
+                Compra sin envío / Retiro en tienda (₡0)
+              </label>
+            </div>
+          </div>
+
+          <div style={{display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #333'}}>
+            <span>Subtotal</span> <span>₡{subtotal}</span>
+          </div>
+          <div style={{display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #333'}}>
+            <span>Costo de Envío</span> <span>₡{costoEnvio}</span>
+          </div>
+          <div style={{...estiloItem, fontWeight: 'bold', fontSize: '1.2rem'}}><span>TOTAL</span> <span>₡{totalFinal}</span></div>
           <button onClick={() => setPaso('DATOS')} style={estiloBoton}>Continuar con los datos</button>
         </div>
       ) : (
