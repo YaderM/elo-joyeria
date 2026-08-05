@@ -160,7 +160,7 @@ router.post('/enviar-correo-prueba', async (req, res) => {
                     cliente_email: cliente_email,
                     total: monto_total,
                     productos: productos,
-                    comprobante: comprobante
+                    comprabante: comprobante
                 }
             })
         });
