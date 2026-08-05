@@ -84,7 +84,10 @@ const GestionPedidos = ({ onPedidoConfirmado }) => {
           ? JSON.parse(pedido.detalle_productos) 
           : pedido.detalle_productos;
         const listaProductos = carrito.map(item => `${item.nombre} (x${item.cantidad})`).join(', ');
+        
+        // Limpiar y asegurar formato correcto con código de país de Costa Rica (506)
         const telefonoLimpio = (pedido.telefono_cliente || '').replace(/\D/g, '');
+        const telefonoWhatsApp = telefonoLimpio.startsWith('506') ? telefonoLimpio : `506${telefonoLimpio}`;
 
         let mensajeWA = '';
         if (isEnvio) {
@@ -94,7 +97,7 @@ const GestionPedidos = ({ onPedidoConfirmado }) => {
         }
 
         if (telefonoLimpio) {
-          window.open(`https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensajeWA)}`, '_blank');
+          window.open(`https://wa.me/${telefonoWhatsApp}?text=${encodeURIComponent(mensajeWA)}`, '_blank');
         }
       } catch (waErr) {
         console.error("Error al abrir WhatsApp:", waErr);
