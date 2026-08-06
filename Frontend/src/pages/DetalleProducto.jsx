@@ -1,24 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useCart } from '../context/CartContext'; // Se agrega esta línea
+import { useCart } from '../context/CartContext';
+import Swal from 'sweetalert2';
+
+// Configuración base para mantener el estilo de marca en todos los alerts
+const swalStyled = Swal.mixin({
+  confirmButtonColor: '#b59410',
+  cancelButtonColor: '#333',
+});
 
 function DetalleProducto() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addToCart } = useCart(); // Se agrega esta línea
+  const { addToCart } = useCart();
   const [producto, setProducto] = useState(null);
   const [cargando, setCargando] = useState(true);
   
-  // Estados de interacción
   const [cantidad, setCantidad] = useState(1);
   const [medidaSeleccionada, setMedidaSeleccionada] = useState('');
   
-  // Estados de los acordeones colapsables
   const [infoAbierta, setInfoAbierta] = useState(true);
   const [envioAbierto, setEnvioAbierto] = useState(false);
 
-  // 🚀 SOLUCIÓN DE SCROLL: Fuerza al navegador a subir al tope al cargar la página
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
@@ -44,10 +48,14 @@ function DetalleProducto() {
   const tieneOferta = producto.precio_oferta !== null && producto.precio_oferta > 0;
   const precioFinalEfectivo = tieneOferta ? Number(producto.precio_oferta) : Number(producto.precio);
 
-  // Nueva función para manejar el carrito
   const manejarAgregarAlCarrito = () => {
     if (esAnillo && !medidaSeleccionada) {
-      alert('Por favor, selecciona una medida para tu anillo antes de agregarlo al carrito.');
+      swalStyled.fire({
+        title: 'Falta la medida',
+        text: 'Por favor, selecciona una medida para tu anillo antes de agregarlo al carrito.',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+      });
       return;
     }
     
@@ -57,7 +65,14 @@ function DetalleProducto() {
       medida: medidaSeleccionada 
     }, cantidad);
     
-    alert('¡Producto agregado al carrito!');
+    swalStyled.fire({
+      title: '¡Agregado!',
+      text: 'El producto se agregó al carrito.',
+      icon: 'success',
+      confirmButtonText: 'Seguir viendo',
+      timer: 1800,
+      timerProgressBar: true,
+    });
   };
 
   return (
@@ -72,7 +87,6 @@ function DetalleProducto() {
 
       <div style={{ display: 'flex', gap: '50px', flexWrap: 'wrap' }}>
         
-        {/* Imagen */}
         <div style={{ flex: '1 1 500px', minWidth: '300px' }} className="contenedor-foto-detalle">
           <div style={{ width: '100%', height: '520px', overflow: 'hidden', borderRadius: '8px', border: '1px solid #f0f0f0', background: '#fff' }}>
             <img 
@@ -83,7 +97,6 @@ function DetalleProducto() {
           </div>
         </div>
 
-        {/* Datos y Formulario */}
         <div style={{ flex: '1 1 450px', minWidth: '300px' }}>
           <span style={{ fontSize: '0.8rem', color: '#b59410', letterSpacing: '2px', fontWeight: '600', textTransform: 'uppercase' }}>
             {producto.material}
