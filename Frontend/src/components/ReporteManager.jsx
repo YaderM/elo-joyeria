@@ -1,11 +1,21 @@
 import React, { useState, useMemo } from 'react';
 import * as XLSX from 'xlsx';
-import { Page, Text, View, Document, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, PDFDownloadLink, Font } from '@react-pdf/renderer';
+import robotoFont from '../assets/fonts/Roboto-Regular.ttf';
+import robotoFontBold from '../assets/fonts/Roboto-Bold.ttf';
 import ReporteProductosPDF from './ReporteProductosPDF';
 
-// 🎨 Estilos para el PDF (Sin cambios)
+Font.register({
+  family: 'Roboto',
+  fonts: [
+    { src: robotoFont, fontWeight: 'normal' },
+    { src: robotoFontBold, fontWeight: 'bold' },
+  ],
+});
+
+// 🎨 Estilos para el PDF
 const styles = StyleSheet.create({
-  page: { padding: 40, backgroundColor: '#ffffff', fontFamily: 'Helvetica' },
+  page: { padding: 40, backgroundColor: '#ffffff', fontFamily: 'Roboto' },
   header: { marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#b59410', paddingBottom: 10 },
   title: { fontSize: 16, fontWeight: 'bold', color: '#b59410', textTransform: 'uppercase' },
   subtitle: { fontSize: 10, color: '#666', marginTop: 5 },
@@ -33,7 +43,7 @@ function ReporteProductosCompletoPDF({ productos }) {
             <Text style={[styles.textBody, { width: '10%' }]}>{p.id_producto}</Text>
             <Text style={[styles.textBody, { width: '25%' }]}>{p.codigo || '-'}</Text>
             <Text style={[styles.textBody, { width: '30%' }]}>{p.nombre || '-'}</Text>
-            <Text style={[styles.textBody, { width: '15%' }]}>₡{Number(p.precio || 0).toLocaleString()}</Text>
+            <Text style={[styles.textBody, { width: '15%' }]}>{'\u20A1'}{Number(p.precio || 0).toLocaleString()}</Text>
             <Text style={[styles.textBody, { width: '10%' }]}>{p.stock || 0}</Text>
             <Text style={[styles.textBody, { width: '10%' }]}>{p.material || '-'}</Text>
           </View>
@@ -52,19 +62,19 @@ function ReporteVentasPDF({ data, titulo }) {
           <Text style={styles.subtitle}>{titulo}</Text>
         </View>
         <View style={styles.tableRowHeader}>
-          <Text style={[styles.textHeader, { width: '20%' }]}>Fecha</Text>
-          <Text style={[styles.textHeader, { width: '40%' }]}>Productos</Text>
-          <Text style={[styles.textHeader, { width: '20%' }]}>Estado</Text>
-          <Text style={[styles.textHeader, { width: '20%', textAlign: 'right' }]}>Total</Text>
+          <Text style={[styles.textHeader, { width: '18%' }]}>Fecha</Text>
+          <Text style={[styles.textHeader, { width: '36%' }]}>Productos</Text>
+          <Text style={[styles.textHeader, { width: '18%' }]}>Estado</Text>
+          <Text style={[styles.textHeader, { width: '18%', textAlign: 'right', paddingRight: 5 }]}>Total</Text>
         </View>
         {data.map((item, i) => (
           <View style={styles.tableRow} key={i}>
-            <Text style={[styles.textBody, { width: '20%' }]}>{item.fecha_creacion || 'N/A'}</Text>
-            <Text style={[styles.textBody, { width: '40%' }]}>
+            <Text style={[styles.textBody, { width: '18%' }]}>{item.fecha_creacion || 'N/A'}</Text>
+            <Text style={[styles.textBody, { width: '36%' }]}>
                 {item.detalle_productos ? (typeof item.detalle_productos === 'string' ? JSON.parse(item.detalle_productos).map(p => p.nombre).join(', ') : item.detalle_productos.map(p => p.nombre).join(', ')) : '-'}
             </Text>
-            <Text style={[styles.textBody, { width: '20%' }]}>{item.estado || 'N/A'}</Text>
-            <Text style={[styles.textBody, { width: '20%', textAlign: 'right' }]}>₡{Number(item.monto_total || 0).toLocaleString()}</Text>
+            <Text style={[styles.textBody, { width: '18%' }]}>{item.estado || 'N/A'}</Text>
+            <Text style={[styles.textBody, { width: '18%', textAlign: 'right', paddingRight: 5 }]}>{'\u20A1'}{Number(item.monto_total || 0).toLocaleString()}</Text>
           </View>
         ))}
       </Page>
@@ -177,7 +187,7 @@ export default function ReporteManager({
                   <>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', borderBottom: '1px solid #eee', paddingBottom: '6px' }}>
                       <span style={{ fontSize: '0.8rem', color: '#888' }}>{typeof item.fecha_creacion === 'string' ? item.fecha_creacion.substring(0, 10) : item.fecha_creacion}</span>
-                      <span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '0.75srem', fontWeight: 'bold', background: item.estado === 'CONFIRMADA' ? '#e8f5e9' : '#fff3e0', color: item.estado === 'CONFIRMADA' ? '#2e7d32' : '#e65100' }}>{item.estado}</span>
+                      <span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold', background: item.estado === 'CONFIRMADA' ? '#e8f5e9' : '#fff3e0', color: item.estado === 'CONFIRMADA' ? '#2e7d32' : '#e65100' }}>{item.estado}</span>
                     </div>
                     <div style={{ marginBottom: '8px' }}>
                       <span style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', display: 'block' }}>Cliente</span>

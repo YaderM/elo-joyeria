@@ -1,8 +1,18 @@
 import React from 'react';
-import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, Font } from '@react-pdf/renderer';
+import robotoFont from '../assets/fonts/Roboto-Regular.ttf';
+import robotoFontBold from '../assets/fonts/Roboto-Bold.ttf';
+
+Font.register({
+  family: 'Roboto',
+  fonts: [
+    { src: robotoFont, fontWeight: 'normal' },
+    { src: robotoFontBold, fontWeight: 'bold' },
+  ],
+});
 
 const styles = StyleSheet.create({
-  page: { padding: 40, backgroundColor: '#ffffff', fontFamily: 'Helvetica' },
+  page: { padding: 40, backgroundColor: '#ffffff', fontFamily: 'Roboto' },
   header: { marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#b59410', paddingBottom: 15 },
   title: { fontSize: 20, fontWeight: 'bold', color: '#b59410', textTransform: 'uppercase' },
   tableRowHeader: { flexDirection: 'row', backgroundColor: '#222', color: '#fff', borderRadius: 4, minHeight: 25, alignItems: 'center', marginTop: 15 },
@@ -34,22 +44,22 @@ export default function ReporteVentasPDF({ data }) {
         </View>
 
         <View style={styles.tableRowHeader}>
-          <Text style={[styles.textHeader, { width: '20%' }]}>Fecha</Text>
-          <Text style={[styles.textHeader, { width: '25%' }]}>Cliente</Text>
-          <Text style={[styles.textHeader, { width: '35%' }]}>Productos</Text>
-          <Text style={[styles.textHeader, { width: '20%', textAlign: 'right' }]}>Total</Text>
+          <Text style={[styles.textHeader, { width: '18%' }]}>Fecha</Text>
+          <Text style={[styles.textHeader, { width: '22%' }]}>Cliente</Text>
+          <Text style={[styles.textHeader, { width: '32%' }]}>Productos</Text>
+          <Text style={[styles.textHeader, { width: '18%', textAlign: 'right' }]}>Total</Text>
         </View>
 
         {data.map((item, i) => (
           <View style={styles.tableRow} key={i}>
-            <Text style={[styles.textBody, { width: '20%' }]}>
+            <Text style={[styles.textBody, { width: '18%' }]}>
               {item.fecha_creacion ? new Date(item.fecha_creacion).toLocaleDateString() : '-'}
             </Text>
-            <Text style={[styles.textBody, { width: '25%' }]}>{item.nombre_cliente || 'N/A'}</Text>
-            <Text style={[styles.textBody, { width: '35%' }]}>
+            <Text style={[styles.textBody, { width: '22%' }]}>{item.nombre_cliente || 'N/A'}</Text>
+            <Text style={[styles.textBody, { width: '32%' }]}>
               {parsearProductos(item.detalle_productos)}
             </Text>
-            <Text style={[styles.textBody, { width: '20%', textAlign: 'right' }]}>
+            <Text style={[styles.textBody, { width: '18%', textAlign: 'right' , paddingRight: 5}]}>
               ₡{Number(item.monto_total || 0).toLocaleString('es-CR')}
             </Text>
           </View>
