@@ -5,16 +5,22 @@ const { enviarCorreo } = require('../utils/emailService'); // 👈 Importamos el
 exports.obtenerProductos = async (req, res) => {
     try {
         const { material, tipo } = req.query;
-        let query = 'SELECT * FROM productos WHERE 1=1';
+        let query = `
+            SELECT p.*, m.nombre AS material, t.nombre AS tipo_producto
+            FROM productos p
+            LEFT JOIN materiales m ON p.material_id = m.id_material
+            LEFT JOIN tipos_producto t ON p.tipo_id = t.id_tipo
+            WHERE 1=1
+        `;
         const queryParams = [];
 
         if (material) {
-            query += ' AND material = ?';
+            query += ' AND m.nombre = ?';
             queryParams.push(material);
         }
 
         if (tipo) {
-            query += ' AND tipo_producto = ?';
+            query += ' AND t.nombre = ?';
             queryParams.push(tipo);
         }
 
@@ -82,15 +88,14 @@ exports.obtenerCategoriasHome = async (req, res) => {
 // 4. Crear producto
 exports.crearProducto = async (req, res) => {
     try {
-        const { nombre, descripcion, precio, imagen_url, stock, material, tipo_producto } = req.body;
+        const { nombre, descripcion, precio, imagen_url, stock, material_id, tipo_id } = req.body;
         
-        // AJUSTE: Mantenemos estructura, solo nos aseguramos de usar columnas reales
         const query = `
-            INSERT INTO productos (nombre, descripcion, precio, imagen_url, stock, material, tipo_producto) 
+            INSERT INTO productos (nombre, descripcion, precio, imagen_url, stock, material_id, tipo_id) 
             VALUES (?, ?, ?, ?, ?, ?, ?)
         `;
         
-        const [result] = await db.query(query, [nombre, descripcion, precio, imagen_url, stock, material, tipo_producto]);
+        const [result] = await db.query(query, [nombre, descripcion, precio, imagen_url, stock, material_id, tipo_id]);
         
         res.status(201).json({ mensaje: 'Producto creado con éxito', id_producto: result.insertId });
     } catch (error) {
@@ -103,17 +108,16 @@ exports.crearProducto = async (req, res) => {
 exports.actualizarProducto = async (req, res) => {
     try {
         const { id } = req.params;
-        const { nombre, descripcion, precio, imagen_url, stock, material, tipo_producto, precio_oferta, fecha_fin_oferta } = req.body;
+        const { nombre, descripcion, precio, imagen_url, stock, material_id, tipo_id, precio_oferta, fecha_fin_oferta } = req.body;
 
-        // AJUSTE: Mantenemos estructura, solo usamos columnas reales
         const query = `
             UPDATE productos 
-            SET nombre = ?, descripcion = ?, precio = ?, imagen_url = ?, stock = ?, material = ?, tipo_producto = ?, precio_oferta = ?, fecha_fin_oferta = ?
+            SET nombre = ?, descripcion = ?, precio = ?, imagen_url = ?, stock = ?, material_id = ?, tipo_id = ?, precio_oferta = ?, fecha_fin_oferta = ?
             WHERE id_producto = ?
         `;
 
         const [result] = await db.query(query, [
-            nombre, descripcion, precio, imagen_url, stock, material, tipo_producto, 
+            nombre, descripcion, precio, imagen_url, stock, material_id, tipo_id,
             precio_oferta || null, fecha_fin_oferta || null, id
         ]);
 
