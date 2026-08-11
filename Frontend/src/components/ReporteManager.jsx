@@ -1,21 +1,21 @@
 import React, { useState, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 import { Page, Text, View, Document, StyleSheet, PDFDownloadLink, Font } from '@react-pdf/renderer';
-import robotoFont from '../assets/fonts/Roboto-Regular.ttf';
-import robotoFontBold from '../assets/fonts/Roboto-Bold.ttf';
+import notoSansFont from '../assets/fonts/NotoSans-Regular.ttf';
+import notoSansFontBold from '../assets/fonts/NotoSans-Bold.ttf';
 import ReporteProductosPDF from './ReporteProductosPDF';
 
 Font.register({
-  family: 'Roboto',
+  family: 'NotoSans',
   fonts: [
-    { src: robotoFont, fontWeight: 'normal' },
-    { src: robotoFontBold, fontWeight: 'bold' },
+    { src: notoSansFont, fontWeight: 'normal' },
+    { src: notoSansFontBold, fontWeight: 'bold' },
   ],
 });
 
 // 🎨 Estilos para el PDF
 const styles = StyleSheet.create({
-  page: { padding: 40, backgroundColor: '#ffffff', fontFamily: 'Roboto' },
+  page: { padding: 40, backgroundColor: '#ffffff', fontFamily: 'NotoSans' },
   header: { marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#b59410', paddingBottom: 10 },
   title: { fontSize: 16, fontWeight: 'bold', color: '#b59410', textTransform: 'uppercase' },
   subtitle: { fontSize: 10, color: '#666', marginTop: 5 },

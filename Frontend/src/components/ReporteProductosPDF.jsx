@@ -1,12 +1,23 @@
 import React from 'react';
-import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, Font } from '@react-pdf/renderer';
+import notoSansFont from '../assets/fonts/NotoSans-Regular.ttf';
+import notoSansFontBold from '../assets/fonts/NotoSans-Bold.ttf';
+
+
+Font.register({
+  family: 'NotoSans',
+  fonts: [
+    { src: notoSansFont, fontWeight: 'normal' },
+    { src: notoSansFontBold, fontWeight: 'bold' },
+  ],
+});
 
 // Definición de estilos profesionales para el PDF
 const styles = StyleSheet.create({
   page: {
     padding: 40,
     backgroundColor: '#ffffff',
-    fontFamily: 'Helvetica',
+    fontFamily: 'NotoSans',
   },
   header: {
     marginBottom: 25,
@@ -138,12 +149,12 @@ function ReporteProductosPDF({ productos }) {
                 </Text>
               </View>
               <View style={styles.colPrecio}>
-                <Text>₡{Number(prod.precio || 0).toLocaleString('es-CR')}</Text>
+                <Text>{'\u20A1'}{Number(prod.precio || 0).toLocaleString('es-CR')}</Text>
               </View>
               <View style={styles.colOferta}>
                 <Text style={{ fontWeight: prod.precio_oferta ? 'bold' : 'normal' }}>
                   {prod.precio_oferta && prod.precio_oferta > 0 
-                    ? `₡${Number(prod.precio_oferta || 0).toLocaleString('es-CR')}` 
+                    ? `\u20A1${Number(prod.precio_oferta || 0).toLocaleString('es-CR')}` 
                     : '-'
                   }
                 </Text>

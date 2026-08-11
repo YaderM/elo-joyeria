@@ -16,7 +16,7 @@ function Tienda() {
   const [precioMaximo, setPrecioMaximo] = useState(200000);
 
   // 🌟 HOMOLOGADOS: Coinciden exactamente con la Base de Datos (MySQL)
-  const materialesDisponibles = ['Acero', 'Pandora', 'Plata', 'Oro', 'Piercings'];
+  const materialesDisponibles = ['Acero Inoxidable','Acero 304', 'Pandora', 'Plata', 'Oro', 'Piercings'];
   const tiposDisponibles = ['Anillos', 'Argollas', 'Aretes', 'Cadenas', 'Collares', 'Huggies', 'Dijes', 'Pulseras', 'Tobilleras', 'Conjuntos'];
 
   // 🔄 Capturar cambios en la URL (cuando se hace clic en el Mega Menú o Filtros)

@@ -14,7 +14,11 @@ function Navbar() {
 
   const seccionesTienda = [
     {
-      titulo: 'Acero',
+      titulo: 'Acero Inoxidable',
+      items: ['Anillos', 'Argollas', 'Aretes', 'Cadenas', 'Collares', 'Huggies', 'Dijes', 'Conjuntos', 'Pulseras', 'Rosarios', 'Tobilleras']
+    },
+    {
+      titulo: 'Acero 304',
       items: ['Anillos', 'Argollas', 'Aretes', 'Cadenas', 'Collares', 'Huggies', 'Dijes', 'Conjuntos', 'Pulseras', 'Rosarios', 'Tobilleras']
     },
     {
