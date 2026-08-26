@@ -9,6 +9,7 @@ import GestionCategorias from '../components/GestionCategorias';
 import GestionPromociones from '../components/GestionPromociones'; 
 import GestionPedidos from '../components/GestionPedidos';
 import ReporteManager from '../components/ReporteManager'; 
+import AdminDashboard from '../components/AdminDashboard';
 
 // Configuración base para mantener el estilo de marca en todos los alerts
 const swalStyled = Swal.mixin({
@@ -38,6 +39,11 @@ function AdminPanel() {
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
 
+  // Datos de ventas exclusivos para el Dashboard General (independientes de datosReporte,
+  // que se usa solo dentro de la pestaña de Reportes/PDF)
+  const [ventasDashboard, setVentasDashboard] = useState([]);
+  const [cargandoDashboard, setCargandoDashboard] = useState(true);
+
   const [mostrarModal, setMostrarModal] = useState(false);
   const [editandoId, setEditandoId] = useState(null);
   const [formProducto, setFormProducto] = useState({
@@ -51,6 +57,7 @@ function AdminPanel() {
     } else {
       cargarProductos();
       cargarAuxiliares();
+      cargarVentasDashboard();
     }
   }, [navigate]);
 
@@ -83,6 +90,28 @@ function AdminPanel() {
       setTipos(resTipos.data);
     } catch (error) {
       console.error("Error al cargar datos auxiliares:", error);
+    }
+  };
+
+  const cargarVentasDashboard = async () => {
+    try {
+      setCargandoDashboard(true);
+      // NOTA: reusamos el endpoint de ventas por rango con una ventana amplia
+      // porque es el único endpoint de ventas confirmado hasta ahora.
+      // Si existe (o se crea) un endpoint tipo GET /api/ventas que devuelva
+      // todo el historial sin filtrar por fecha, conviene reemplazar esta
+      // llamada por esa ruta (más liviana para el backend).
+      const hoyISO = new Date().toISOString().split('T')[0];
+      const respuesta = await axios.get(`${API_URL}/ventas/ventas_pendientes`, {
+        params: { desde: '2000-01-01', hasta: hoyISO },
+        ...getConfig()
+      });
+      setVentasDashboard(respuesta.data);
+    } catch (error) {
+      console.error("Error al cargar ventas del dashboard:", error);
+      setVentasDashboard([]);
+    } finally {
+      setCargandoDashboard(false);
     }
   };
 
@@ -306,6 +335,7 @@ function AdminPanel() {
                 <p style={{ color: '#888', fontSize: '0.75rem', margin: 0, textTransform: 'uppercase' }}>Administrador</p>
               </div>
               <nav style={{ marginTop: '10px' }}>
+                <button onClick={() => { setSeccionActiva('dashboard'); setMenuAbierto(false); }} style={seccionActiva === 'dashboard' ? estiloBotonActivo : estiloBotonSidebar}>📊 Dashboard General</button>
                 <button onClick={() => { setSeccionActiva('inventario'); setMenuAbierto(false); }} style={seccionActiva === 'inventario' ? estiloBotonActivo : estiloBotonSidebar}>📦 Gestión de Inventario</button>
                 <button onClick={() => { setSeccionActiva('categorias'); setMenuAbierto(false); }} style={seccionActiva === 'categorias' ? estiloBotonActivo : estiloBotonSidebar}>🗂️ Categorías y Tipos</button>
                 <button onClick={() => { setSeccionActiva('promociones'); setMenuAbierto(false); }} style={seccionActiva === 'promociones' ? estiloBotonActivo : estiloBotonSidebar}>🏷️ Precios y Ofertas</button>
@@ -322,6 +352,7 @@ function AdminPanel() {
         <main className="admin-content-area" style={{ flexGrow: 1, padding: '40px', overflowY: 'auto', minWidth: 0, boxSizing: 'border-box' }}>
           <div className="admin-header-seccion" style={estiloHeaderSeccion}>
             <h2 style={{ fontSize: '1.6rem', fontWeight: '400', color: '#222', textTransform: 'uppercase', margin: 0 }}>
+              {seccionActiva === 'dashboard' && '📊 Dashboard General'}
               {seccionActiva === 'inventario' && '📦 Panel de Control de Inventario'}
               {seccionActiva === 'categorias' && '🗂️ Configuración de Materiales y Tipos'}
               {seccionActiva === 'promociones' && '🏷️ Campañas, Precios Especiales y Ofertas'}
@@ -332,6 +363,15 @@ function AdminPanel() {
           </div>
 
           <div style={estiloContenedorBlanco}>
+            {seccionActiva === 'dashboard' && (
+              <AdminDashboard 
+                datosReporte={ventasDashboard}
+                productosInventario={productos}
+                cargando={cargandoDashboard}
+                onRefrescar={cargarVentasDashboard}
+                onCambiarSeccion={(seccion) => setSeccionActiva(seccion)}
+              />
+            )}
             {seccionActiva === 'inventario' && (
               cargando ? <p style={{ textAlign: 'center', color: '#777' }}>Consultando base de datos...</p> :
               <GestionInventario 
