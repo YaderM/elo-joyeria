@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -17,12 +17,21 @@ const swalStyled = Swal.mixin({
   cancelButtonColor: '#333',
 });
 
+// Configuración de cierre de sesión automático por inactividad
+const TIEMPO_INACTIVIDAD_MS = 15 * 60 * 1000; // 15 minutos sin actividad
+const TIEMPO_AVISO_ANTES_MS = 60 * 1000; // avisa 1 minuto antes de cerrar la sesión
+
 function AdminPanel() {
   const navigate = useNavigate();
   const [seccionActiva, setSeccionActiva] = useState('inventario');
   
   const [menuAbierto, setMenuAbierto] = useState(false);
-  
+
+  // Refs para el sistema de cierre de sesión por inactividad (no necesitan re-render)
+  const timerAvisoRef = useRef(null);
+  const timerCierreRef = useRef(null);
+  const avisoMostradoRef = useRef(false);
+
   const API_URL = 'https://elo-joyeria-backend.vercel.app/api';
 
   const getConfig = () => ({
@@ -60,6 +69,74 @@ function AdminPanel() {
       cargarVentasDashboard();
     }
   }, [navigate]);
+
+  // --- Cierre de sesión automático por inactividad ---
+  const cerrarSesionPorInactividad = () => {
+    clearTimeout(timerAvisoRef.current);
+    clearTimeout(timerCierreRef.current);
+    localStorage.removeItem('adminToken');
+    Swal.fire({
+      title: 'Sesión cerrada por inactividad',
+      text: `Por seguridad, se cerró tu sesión luego de ${TIEMPO_INACTIVIDAD_MS / 60000} minutos sin actividad.`,
+      icon: 'info',
+      confirmButtonText: 'Entendido',
+      confirmButtonColor: '#b59410',
+    });
+    navigate('/login');
+  };
+
+  const reiniciarTemporizadores = () => {
+    avisoMostradoRef.current = false;
+    clearTimeout(timerAvisoRef.current);
+    clearTimeout(timerCierreRef.current);
+    timerAvisoRef.current = setTimeout(mostrarAvisoInactividad, TIEMPO_INACTIVIDAD_MS - TIEMPO_AVISO_ANTES_MS);
+    timerCierreRef.current = setTimeout(cerrarSesionPorInactividad, TIEMPO_INACTIVIDAD_MS);
+  };
+
+  const mostrarAvisoInactividad = () => {
+    avisoMostradoRef.current = true;
+    Swal.fire({
+      title: '¿Seguís ahí?',
+      text: 'Tu sesión se va a cerrar en 1 minuto por inactividad.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Seguir conectado',
+      cancelButtonText: 'Cerrar sesión ahora',
+      confirmButtonColor: '#b59410',
+      cancelButtonColor: '#333',
+      timer: TIEMPO_AVISO_ANTES_MS,
+      timerProgressBar: true,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        reiniciarTemporizadores();
+      } else {
+        cerrarSesionPorInactividad();
+      }
+    });
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    if (!token) return; // sin sesión activa, no hay nada que temporizar
+
+    const eventosDeActividad = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+    const manejarActividad = () => {
+      // Mientras el aviso de "¿Seguís ahí?" está en pantalla, no reiniciamos el temporizador
+      // solo por mover el mouse; el usuario tiene que responder explícitamente al aviso.
+      if (!avisoMostradoRef.current) {
+        reiniciarTemporizadores();
+      }
+    };
+
+    eventosDeActividad.forEach((evento) => window.addEventListener(evento, manejarActividad));
+    reiniciarTemporizadores(); // arranca el conteo apenas se monta el panel
+
+    return () => {
+      eventosDeActividad.forEach((evento) => window.removeEventListener(evento, manejarActividad));
+      clearTimeout(timerAvisoRef.current);
+      clearTimeout(timerCierreRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (seccionActivaReporte === 'inventario' && productos.length > 0) {
@@ -237,6 +314,44 @@ function AdminPanel() {
     }
   };
 
+  const limpiarCacheYSalir = async () => {
+    const result = await swalStyled.fire({
+      title: '¿Borrar caché y cerrar sesión?',
+      text: 'Esto va a limpiar los datos guardados de la sesión del admin en este navegador y vas a tener que iniciar sesión de nuevo.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, borrar todo',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (!result.isConfirmed) return;
+
+    // Limpiamos puntualmente lo del admin, no todo localStorage,
+    // para no afectar otros datos que el sitio pueda guardar en el mismo dominio
+    // (por ejemplo, un carrito de compras de un cliente en el mismo navegador).
+    localStorage.removeItem('adminToken');
+    sessionStorage.clear();
+
+    // Si el navegador tiene Cache API activa (service workers, PWA, assets cacheados), la limpiamos también
+    if ('caches' in window) {
+      try {
+        const nombresCache = await caches.keys();
+        await Promise.all(nombresCache.map((nombre) => caches.delete(nombre)));
+      } catch (error) {
+        console.error('No se pudo limpiar el Cache API:', error);
+      }
+    }
+
+    await swalStyled.fire({
+      title: 'Caché borrado',
+      text: 'Vas a ser redirigido al login.',
+      icon: 'success',
+      confirmButtonText: 'Listo',
+    });
+
+    navigate('/login');
+  };
+
   return (
     <>
       <style>{`
@@ -345,6 +460,7 @@ function AdminPanel() {
             </div>
             <div style={{ padding: '20px 20px 0 20px' }} className="btn-cerrar-desktop">
               <button onClick={() => { localStorage.removeItem('adminToken'); navigate('/login'); }} style={estiloBotonCerrar}>🚪 Cerrar Sesión</button>
+              <button onClick={limpiarCacheYSalir} style={{ ...estiloBotonCerrar, marginTop: '10px', backgroundColor: '#2a2a2a', color: '#d4af37' }}>🧹 Borrar Caché y Salir</button>
             </div>
           </div>
         </aside>
