@@ -23,7 +23,7 @@ const TIEMPO_AVISO_ANTES_MS = 60 * 1000; // avisa 1 minuto antes de cerrar la se
 
 function AdminPanel() {
   const navigate = useNavigate();
-  const [seccionActiva, setSeccionActiva] = useState('inventario');
+  const [seccionActiva, setSeccionActiva] = useState('dashboard');
   
   const [menuAbierto, setMenuAbierto] = useState(false);
 
@@ -43,7 +43,7 @@ function AdminPanel() {
   const [tipos, setTipos] = useState([]);
   const [cargando, setCargando] = useState(true);
 
-  const [seccionActivaReporte, setSeccionActivaReporte] = useState('dashboard');
+  const [seccionActivaReporte, setSeccionActivaReporte] = useState('inventario');
   const [datosReporte, setDatosReporte] = useState([]);
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
