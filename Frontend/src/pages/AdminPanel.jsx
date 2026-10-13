@@ -4,12 +4,12 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 
 // Componentes modulares
+import AdminDashboard from '../components/AdminDashboard';
 import GestionInventario from '../components/GestionInventario';
 import GestionCategorias from '../components/GestionCategorias';
 import GestionPromociones from '../components/GestionPromociones'; 
 import GestionPedidos from '../components/GestionPedidos';
-import ReporteManager from '../components/ReporteManager'; 
-import AdminDashboard from '../components/AdminDashboard';
+import ReporteManager from '../components/ReporteManager';
 
 // Configuración base para mantener el estilo de marca en todos los alerts
 const swalStyled = Swal.mixin({
