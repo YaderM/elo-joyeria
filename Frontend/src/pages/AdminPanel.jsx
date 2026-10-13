@@ -43,7 +43,7 @@ function AdminPanel() {
   const [tipos, setTipos] = useState([]);
   const [cargando, setCargando] = useState(true);
 
-  const [seccionActivaReporte, setSeccionActivaReporte] = useState('inventario');
+  const [seccionActivaReporte, setSeccionActivaReporte] = useState('dashboard');
   const [datosReporte, setDatosReporte] = useState([]);
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
@@ -82,7 +82,7 @@ function AdminPanel() {
       confirmButtonText: 'Entendido',
       confirmButtonColor: '#b59410',
     });
-    navigate('/login');
+    navigate('/');
   };
 
   const reiniciarTemporizadores = () => {
@@ -349,7 +349,7 @@ function AdminPanel() {
       confirmButtonText: 'Listo',
     });
 
-    navigate('/login');
+    navigate('/');
   };
 
   return (
@@ -432,7 +432,7 @@ function AdminPanel() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <button 
-                onClick={() => { localStorage.removeItem('adminToken'); navigate('/login'); }} 
+                onClick={() => { localStorage.removeItem('adminToken'); navigate('/'); }} 
                 className="btn-cerrar-mobile"
               >
                 🚪 Salir
@@ -459,7 +459,7 @@ function AdminPanel() {
               </nav>
             </div>
             <div style={{ padding: '20px 20px 0 20px' }} className="btn-cerrar-desktop">
-              <button onClick={() => { localStorage.removeItem('adminToken'); navigate('/login'); }} style={estiloBotonCerrar}>🚪 Cerrar Sesión</button>
+              <button onClick={() => { localStorage.removeItem('adminToken'); navigate('/'); }} style={estiloBotonCerrar}>🚪 Cerrar Sesión</button>
               <button onClick={limpiarCacheYSalir} style={{ ...estiloBotonCerrar, marginTop: '10px', backgroundColor: '#2a2a2a', color: '#d4af37' }}>🧹 Borrar Caché y Salir</button>
             </div>
           </div>
