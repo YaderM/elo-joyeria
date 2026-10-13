@@ -53,6 +53,17 @@ function Inicio() {
   return (
     <div style={{ backgroundColor: '#fafafa', minHeight: '100vh' }}>
 
+    <style>{`
+      @media (max-width: 600px) {
+        .btn-admin-inicio {
+          top: 12px !important;
+          right: 12px !important;
+          padding: 6px 14px !important;
+          font-size: 0.7rem !important;
+        }
+      }
+    `}</style>
+
       {/* 1. SECCIÓN HERO / BANNER PRINCIPAL CON IMAGEN DE FONDO */}
       <section style={{
         position: 'relative',
@@ -63,6 +74,21 @@ function Inicio() {
         backgroundSize: 'cover',
         backgroundPosition: 'center'
       }}>
+        <Link
+  to="/login"
+  className="btn-admin-inicio"
+  style={estiloBotonAdmin}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.backgroundColor = '#d4af37';
+    e.currentTarget.style.color = '#1a1a1a';
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.35)';
+    e.currentTarget.style.color = '#d4af37';
+  }}
+>
+  🔐 Sign in
+</Link>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <span style={{ color: '#b59410', letterSpacing: '3px', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '15px' }}>Colecciones Exclusivas</span>
           <h2 style={{ color: '#d4af37', fontSize: '3.5rem', fontWeight: '300', letterSpacing: '3px', marginBottom: '25px', marginTop: '0', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
@@ -340,6 +366,25 @@ const estiloBotonLimpiarBuscador = {
   cursor: 'pointer',
   padding: '5px',
   transition: 'color 0.2s ease'
+};
+
+
+const estiloBotonAdmin = {
+  position: 'absolute',
+  top: '20px',
+  right: '25px',
+  color: '#d4af37',
+  border: '1px solid #d4af37',
+  backgroundColor: 'rgba(0,0,0,0.35)',
+  backdropFilter: 'blur(4px)',
+  padding: '8px 18px',
+  borderRadius: '20px',
+  fontSize: '0.8rem',
+  fontWeight: '500',
+  letterSpacing: '1px',
+  textDecoration: 'none',
+  textTransform: 'uppercase',
+  transition: 'all 0.3s ease'
 };
 
 const estiloBotonHero = {
